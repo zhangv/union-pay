@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * Class UnionPay
+ * @author zhangv
+ */
 class UnionPay {
 	const URL_FRONTTRANS = "https://gateway.95516.com/gateway/api/frontTransReq.do";
 	const URL_BACKTRANS = "https://gateway.95516.com/gateway/api/backTransReq.do";
@@ -134,10 +139,13 @@ HTML;
 		ksort($signData);
 		$signQueryString = $this->arrayToString($signData);
 		if($this->params['signMethod'] == 01) {
-			//签名之前先用sha1处理
-			//echo $signQueryString;exit;
-			$datasha1 = sha1($signQueryString);
-			$signed = $this->rsaSign($datasha1);
+			if($this->params['version'] == '5.0.0') {
+				//签名之前先用sha1处理
+				$datasha1 = sha1($signQueryString);
+				$signed = $this->rsaSign($datasha1);
+			}elseif($this->params['version'] == '5.1.0') {
+
+			}
 		} else {
 			throw new \InvalidArgumentException('Nonsupport Sign Method');
 		}
@@ -203,8 +211,8 @@ HTML;
 	 */
 	public function refund($orderId,$origQryId,$refundAmt,$ext){
 		$this->params = [
-			'version' => $this->config['version'],		//版本号
-			'encoding' => $this->config['encoding'],	//编码方式
+			'version' => '5.0.0',		//版本号
+			'encoding' => 'utf-8',		//编码方式
 			'certId' => $this->getSignCertId(),	//证书ID
 			'signMethod' => '01',		//签名方法
 			'txnType' => '04',		//交易类型 04- 退款
@@ -227,8 +235,8 @@ HTML;
 
 	/**
 	 * 后台交易 HttpClient通信
-	 * @param unknown_type $params
-	 * @param unknown_type $url
+	 * @param array $params
+	 * @param string $url
 	 * @return mixed
 	 */
 	function sendHttpRequest($params, $url) {
@@ -264,60 +272,49 @@ HTML;
 		return substr ( $params_str, 0, strlen ( $params_str ) - 1 );
 	}
 
-	/**
-	 * 消费交易-控件后台订单推送
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param $orderDesc
-	 * @param string $reqReserved
-	 * @return mixed
-	 */
-	public function appPay($orderId,$txnAmt,$orderDesc,$reqReserved = ''){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
+	public function appPay(){
+		$params = array(
+				'version' => '5.0.0',				//版本号
+				'encoding' => 'utf-8',				//编码方式
 				'certId' => $this->getSignCertId (),			//证书ID
 				'txnType' => '01',				//交易类型
 				'txnSubType' => '01',				//交易子类
 				'bizType' => '000201',				//业务类型
-				'frontUrl' =>  $this->config['returnUrl'],  		//前台通知地址，控件接入的时候不会起作用
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
+				'frontUrl' =>  $this->config['notifyUrl'],  		//前台通知地址，控件接入的时候不会起作用
+				'backUrl' => $this->config['returnUrl'],		//后台通知地址
 				'signMethod' => '01',		//签名方法
 				'channelType' => '08',		//渠道类型，07-PC，08-手机
 				'accessType' => '0',		//接入类型
-				'merId' => $this->config['merId'],	//商户代码，请修改为自己的商户号
-				'orderId' => $orderId,	//商户订单号，8-40位数字字母
+				'merId' =>  $this->config['merId'],	//商户代码，请改自己的测试商户号
+				'orderId' => date('YmdHis'),	//商户订单号，8-40位数字字母
 				'txnTime' => date('YmdHis'),	//订单发送时间
-				'txnAmt' => $txnAmt,		//交易金额，单位分
+				'txnAmt' => '100',		//交易金额，单位分
 				'currencyCode' => '156',	//交易币种
-				'orderDesc' => $orderDesc,  //订单描述，可不上送，上送时控件中会显示该信息
-				'reqReserved' => $reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
+				'orderDesc' => '订单描述',  //订单描述，可不上送，上送时控件中会显示该信息
+				'reqReserved' =>' 透传信息', //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
-		return $result;
+
 	}
 
 	/**
 	 * 查询交易
 	 */
 	public function query($orderId,$txnTime){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
-				'signMethod' => '01',		//签名方法
-				'txnType' => '00',		//交易类型
-				'txnSubType' => '00',		//交易子类
-				'bizType' => '000000',		//业务类型
-				'accessType' => '0',		//接入类型
-				'channelType' => '07',		//渠道类型
-				'orderId' => $orderId,	//请修改被查询的交易的订单号
-				'merId' => $this->config['merId'],	//商户代码，请修改为自己的商户号
-				'txnTime' => $txnTime,	//请修改被查询的交易的订单发送时间
+		$params = array(
+			'version' => '5.0.0',		//版本号
+			'encoding' => 'utf-8',		//编码方式
+			'certId' => $this->getSignCertId (),	//证书ID
+			'signMethod' => '01',		//签名方法
+			'txnType' => '00',		//交易类型
+			'txnSubType' => '00',		//交易子类
+			'bizType' => '000000',		//业务类型
+			'accessType' => '0',		//接入类型
+			'channelType' => '07',		//渠道类型
+			'orderId' => $orderId,	//请修改被查询的交易的订单号
+			'merId' =>  $this->config['merId'],	//商户代码，请修改为自己的商户号
+			'txnTime' => $txnTime,//'20150206212559',	//请修改被查询的交易的订单发送时间
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
+		$result = $this->sendHttpRequest($params,self::URL_SINGLEQUERY);
 		return $result;
 	}
 
@@ -325,76 +322,47 @@ HTML;
 	 * 文件传输类交易
 	 */
 	public function fileTransfer($settleDate){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
-				'txnType' => '76',		//交易类型
-				'signMethod' => '01',		//签名方法
-				'txnSubType' => '01',		//交易子类
-				'bizType' => '000000',		//业务类型
-				'accessType' => '0',		//接入类型
-				'merId' => $this->config['merId'],  //商户代码，请替换实际商户号测试，如使用的是自助化平台注册的商户号，该商户号没有权限测文件下载接口的，请使用测试参数里写的文件下载的商户号和日期测。如需真实交易文件，请使用自助化平台下载文件。
-				'settleDate' => $settleDate,		//清算日期,如0119
-				'txnTime' => date('YmdHis'),	//订单发送时间
-				'fileType' => '00',		//文件类型
+		$params = array(
+			'version' => '5.0.0',		//版本号
+			'encoding' => 'utf-8',		//编码方式
+			'certId' => $this->getSignCertId (),	//证书ID
+			'txnType' => '76',		//交易类型
+			'signMethod' => '01',		//签名方法
+			'txnSubType' => '01',		//交易子类
+			'bizType' => '000000',		//业务类型
+			'accessType' => '0',		//接入类型
+			'merId' =>  $this->config['merId'],	                //商户代码，请替换实际商户号测试，如使用的是自助化平台注册的商户号，该商户号没有权限测文件下载接口的，请使用测试参数里写的文件下载的商户号和日期测。如需真实交易文件，请使用自助化平台下载文件。
+			'settleDate' => $settleDate,//'0119',		//清算日期
+			'txnTime' => date('YmdHis'),	//订单发送时间
+			'fileType' => '00',		//文件类型
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
+		$result = $this->sendHttpRequest($params,self::URL_FILEQUERY);
 		return $result;
 	}
 
 	/**
-	 * 预授权 - 控件
+	 * 预授权
 	 */
-	public function authDealApp($orderId,$txnAmt,$orderDesc,$reqReserved = ''){
+	public function preAuth($orderId,$amt,$orderDesc,$reqReserved = ''){
 		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
+				'version' => '5.0.0',				//版本号
+				'encoding' => 'utf-8',				//编码方式
 				'certId' => $this->getSignCertId (),			//证书ID
 				'txnType' => '02',				//交易类型
 				'txnSubType' => '01',				//交易子类 01：预授权、03：担保消费
 				'bizType' => '000201',				//业务类型
-				'frontUrl' =>  $this->config['returnUrl'],  		//前台通知地址，控件接入的时候不会起作用
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
+				'frontUrl' =>  $this->config['notifyUrl'],  		//前台通知地址
+				'backUrl' => $this->config['returnUrl'],		//后台通知地址
 				'signMethod' => '01',		//签名方法
 				'channelType' => '08',		//渠道类型，07-PC，08-手机
 				'accessType' => '0',		//接入类型
-				'merId' => $this->config['merId'], 	//商户代码，请改自己的测试商户号
+				'merId' => $this->config['merId'],	//商户代码，请改自己的测试商户号
 				'orderId' => $orderId,	//商户订单号，8-40位数字字母
 				'txnTime' => date('YmdHis'),	//订单发送时间
-				'txnAmt' => $txnAmt,		//交易金额，单位分
+				'txnAmt' => $amt,		//交易金额，单位分
 				'currencyCode' => '156',	//交易币种
 				'orderDesc' => $orderDesc,  //订单描述，可不上送，上送时控件中会显示该信息
-				'reqReserved' =>$reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
-		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
-		return $result;
-	}
-	/**
-	 * 预授权 - 跳转网关
-	 */
-	public function authDeal($orderId,$txnAmt,$orderDesc,$reqReserved = ''){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
-				'txnType' => '02',				//交易类型
-				'txnSubType' => '01',				//交易子类 01：预授权、03：担保消费
-				'bizType' => '000201',				//业务类型
-				'frontUrl' =>  $this->config['returnUrl'],  		//前台通知地址，控件接入的时候不会起作用
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
-				'signMethod' => '01',		//签名方法
-				'channelType' => '08',		//渠道类型，07-PC，08-手机
-				'accessType' => '0',		//接入类型
-				'merId' => $this->config['merId'], 	//商户代码，请改自己的测试商户号
-				'orderId' => $orderId,	//商户订单号，8-40位数字字母
-				'txnTime' => date('YmdHis'),	//订单发送时间
-				'txnAmt' => $txnAmt,		//交易金额，单位分
-				'currencyCode' => '156',	//交易币种
-				'orderDesc' => $orderDesc,  //订单描述，可不上送，上送时控件中会显示该信息
-				'reqReserved' =>$reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
+				'reqReserved' => $reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
 		);
 		return $this->createPostForm();
 	}
@@ -402,11 +370,11 @@ HTML;
 	/**
 	 * 预授权撤销
 	 */
-	public function authDealUndo($orderId,$origQryId,$txnAmt,$reqReserved = ''){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
+	public function preAuthUndo($orderId,$origQryId,$amt,$reqReserved = ''){
+		$params = array(
+				'version' => '5.0.0',		//版本号
+				'encoding' => 'utf-8',		//编码方式
+				'certId' => $this->getSignCertId (),	//证书ID
 				'signMethod' => '01',		//签名方法
 				'txnType' => '32',		//交易类型
 				'txnSubType' => '00',		//交易子类
@@ -414,27 +382,25 @@ HTML;
 				'accessType' => '0',		//接入类型
 				'channelType' => '07',		//渠道类型
 				'orderId' => $orderId,	//商户订单号，重新产生，不同于原消费
-				'merId' => $this->config['merId'],			//商户代码，请改成自己的测试商户号
+				'merId' =>  $this->config['merId'],			//商户代码，请改成自己的测试商户号
 				'origQryId' => $origQryId,    //原预授权的queryId，可以从查询接口或者通知接口中获取
 				'txnTime' => date('YmdHis'),	//订单发送时间，重新产生，不同于原交易
-				'txnAmt' => $txnAmt,              //交易金额，需和原预授权一致
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
-				'reqReserved' =>$reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
+				'txnAmt' => $amt,              //交易金额，需和原预授权一致
+				'backUrl' => $this->config['returnUrl'],	   //后台通知地址
+				'reqReserved' => $reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
+		$result = $this->sendHttpRequest($params,self::URL_BACKTRANS);
 		return $result;
-
 	}
 
 	/**
 	 * 预授权完成
 	 */
-	public function authDealFinish($orderId,$origQryId,$txnAmt,$reqReserved = ''){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
+	public function preAuthFinish($orderId,$origQryId,$amt,$reqReserved = ''){
+		$params = array(
+				'version' => '5.0.0',		//版本号
+				'encoding' => 'utf-8',		//编码方式
+				'certId' => $this->getSignCertId (),	//证书ID
 				'signMethod' => '01',		//签名方法
 				'txnType' => '03',		//交易类型
 				'txnSubType' => '00',		//交易子类
@@ -442,26 +408,25 @@ HTML;
 				'accessType' => '0',		//接入类型
 				'channelType' => '07',		//渠道类型
 				'orderId' => $orderId,	//商户订单号，重新产生，不同于原消费
-				'merId' => $this->config['merId'],			//商户代码，请改成自己的测试商户号
+				'merId' =>  $this->config['merId'],			//商户代码，请改成自己的测试商户号
 				'origQryId' => $origQryId,    //原预授权的queryId，可以从查询接口或者通知接口中获取
 				'txnTime' => date('YmdHis'),	//订单发送时间，重新产生，不同于原交易
-				'txnAmt' => $txnAmt,              //交易金额，小于等于原预授权金额的115%
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
-				'reqReserved' =>$reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
+				'txnAmt' => $amt,              //交易金额，小于等于原预授权金额的115%
+				'backUrl' => $this->config['returnUrl'],	   //后台通知地址
+				'reqReserved' => $reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
+		$result = $this->sendHttpRequest($params,self::URL_BACKTRANS);
 		return $result;
 	}
 
 	/**
 	 * 预授权完成撤销
 	 */
-	public function authDealFinishUndo($orderId,$origQryId,$txnAmt,$reqReserved = ''){
-		$this->params = array(
-				'version' => $this->config['version'],		//版本号
-				'encoding' => $this->config['encoding'],	//编码方式
-				'certId' => $this->getSignCertId (),			//证书ID
+	public function preAuthFinishUndo($orderId,$origQryId,$amt,$reqReserved = ''){
+		$params = array(
+				'version' => '5.0.0',		//版本号
+				'encoding' => 'utf-8',		//编码方式
+				'certId' => $this->getSignCertId (),	//证书ID
 				'signMethod' => '01',		//签名方法
 				'txnType' => '33',		//交易类型
 				'txnSubType' => '00',		//交易子类
@@ -470,14 +435,13 @@ HTML;
 				'channelType' => '07',		//渠道类型
 				'orderId' => $orderId,	//商户订单号，重新产生，不同于原消费
 				'merId' => $this->config['merId'],			//商户代码，请改成自己的测试商户号
-				'origQryId' => $origQryId,    //原预授权的queryId，可以从查询接口或者通知接口中获取
+				'origQryId' => $origQryId,    //原预授权完成的queryId，可以从查询接口或者通知接口中获取
 				'txnTime' => date('YmdHis'),	//订单发送时间，重新产生，不同于原交易
-				'txnAmt' => $txnAmt,              //交易金额，小于等于原预授权金额的115%
-				'backUrl' => $this->config['notifyUrl'],		//后台通知地址
-				'reqReserved' =>$reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
+				'txnAmt' => $amt,              //交易金额，需和原预授权完成一致
+				'backUrl' => $this->config['returnUrl'],	   //后台通知地址
+				'reqReserved' => $reqReserved, //请求方保留域，透传字段，查询、通知、对账文件中均会原样出现
 		);
-		$this->params['signature'] = $this->sign();
-		$result = $this->sendHttpRequest($this->params,self::URL_BACKTRANS);
+		$result = $this->sendHttpRequest($params,self::URL_BACKTRANS);
 		return $result;
 	}
 
@@ -512,10 +476,6 @@ HTML;
 	 * @return string
 	 */
 	private function getVerifyPublicKey(){
-		//先判断配置的验签证书是否银联返回指定的证书是否一致
-		if($this->getCertIdCer($this->config['verifyCertPath']) != $this->getSignCertId()) {
-			throw new \InvalidArgumentException('Verify sign cert is incorrect');
-		}
 		return file_get_contents($this->config['verifyCertPath']);
 	}
 
@@ -530,18 +490,4 @@ HTML;
 		return $certdata['serialNumber'];
 	}
 
-	private function post($url, $data) {
-		$data["sign"] = $this->sign($data);
-		$xml = $this->array2xml($data);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_URL, $url);
-		$content = curl_exec($ch);
-		$array = $this->xml2array($content);
-		return $array;
-	}
 }
