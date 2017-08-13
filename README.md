@@ -1,6 +1,10 @@
 # union-pay
 simplest union pay
-'<?php
+
+Step 1: config.php
+
+```
+<?php
 
 return [
 	'version'   => '5.0.0',
@@ -15,4 +19,33 @@ return [
 	'signCertPwd' => 'XXXX', //签名证书密码
 	'verifyCertPath' => '/YOURPATHTO/acp_prod_verify_sign.cer', //验签证书路径
 
-];'
+];
+```
+
+
+Step 2: unionpay.php
+
+```
+require_once __DIR__ . "/../UnionPay.php";
+$config = include './config.php';
+$unionPay = new UnionPay($config);
+$payOrderNo = date('YmdHis');
+$sum = 1;
+$desc = 'desc';
+
+$html = $unionPay->pay($payOrderNo,$sum,$desc,'');
+echo $html;
+```
+
+Step 3: unionpayreturn.php
+
+```
+require_once __DIR__ . "/../UnionPay.php";
+$config = include './config.php';
+
+$unionPay = new UnionPay($config);
+$unionPay->params = $_POST;//银联提交的参数
+if($unionPay->verifySign() && $unionPay->params['respCode'] == '00') {
+	echo '支付成功';
+}else echo '支付失败';
+```
