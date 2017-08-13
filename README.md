@@ -3,8 +3,7 @@ simplest union pay
 
 Step 1: config.php
 
-```
-<?php
+```php
 
 return [
 	'version'   => '5.0.0',
@@ -25,7 +24,7 @@ return [
 
 Step 2: unionpay.php
 
-```
+```php
 require_once __DIR__ . "/../UnionPay.php";
 $config = include './config.php';
 $unionPay = new UnionPay($config);
@@ -39,7 +38,7 @@ echo $html;
 
 Step 3: unionpayreturn.php
 
-```
+```php
 require_once __DIR__ . "/../UnionPay.php";
 $config = include './config.php';
 
