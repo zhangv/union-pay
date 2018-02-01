@@ -1,2 +1,5 @@
-# Created by .ignore support plugin (hsz.mobi)
-.idea/
+.idea
+vendor
+/test/config.php
+/test/keys/
+
