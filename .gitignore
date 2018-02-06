@@ -1,5 +1,7 @@
 .idea
 vendor
-/test/config.php
-/test/keys/
+demo/config-prod.php
+demo/cert/*prod*
+demo/cert/signcert.pfx
+sdk
 

@@ -1,18 +1,19 @@
 <?php
 
 require_once __DIR__ . "/../src/UnionPay.php";
+require_once __DIR__ . "/../src/HttpClient.php";
 use zhangv\unionPay\UnionPay;
-$config = include './config.php';
+list($mode,$config) = include './config.php';
+$unionPay = new UnionPay($config,$mode);
 
-$unionPay = new UnionPay($config);
 $notifyData = $_POST;
 $respCode = $notifyData['respCode'];
 if($respCode == '00'){
 	$txnType = $notifyData['txnType'];
 	if($txnType == UnionPay::TXNTYPE_CONSUME){
-		$unionPay->onConsumeNotify($notifyData,'demoCallback');
+		$unionPay->onPayNotify($notifyData,'demoCallback');
 	}elseif($txnType == UnionPay::TXNTYPE_CONSUMEUNDO){
-		$unionPay->onConsumeUndoNotify($notifyData,'demoCallback');
+		$unionPay->onPayUndoNotify($notifyData,'demoCallback');
 	}elseif($txnType == UnionPay::TXNTYPE_REFUND){
 		$unionPay->onRefundNotify($notifyData,'demoCallback');
 	}else echo 'fail';

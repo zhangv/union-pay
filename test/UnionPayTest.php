@@ -13,20 +13,8 @@ class UnionPayTest extends PHPUnit\Framework\TestCase{
 	private $unionPay;
 
 	public function setUp(){
-		$config = [
-			'merId' => '700000000000001',
-			'returnUrl' => 'https://Yoursites.com/demo/unionpayreturn.php', //前台返回
-			'notifyUrl' => 'https://Yoursites.com/demo/unionpaynotify.php', //后台通知
-			'failUrl'   => 'https://Yoursites.com/unionpayfail/',
-			'signCertPath' => dirname(__FILE__).'/cert/acp_test_sign.pfx',
-			'signCertPwd' => '000000', //签名证书密码
-			'verifyCertPath' => dirname(__FILE__).'/cert/acp_test_root.cer',
-		];
-		$this->unionPay = new UnionPay($config);
-		$this->unionPay->frontTransUrl = 'https://gateway.test.95516.com/gateway/api/frontTransReq.do';
-		$this->unionPay->backTransUrl = 'https://gateway.test.95516.com/gateway/api/backTransReq.do';
-		$this->unionPay->singleQueryUrl = 'https://gateway.test.95516.com/gateway/api/queryTrans.do';
-		$this->unionPay->fileDownloadUrl = 'https://filedownload.test.95516.com/';
+		list($mode,$config) = include_once __DIR__ .'/../demo/config.php';
+		$this->unionPay = new UnionPay($config,$mode);
 	}
 
 	private static $outTradeNoOffset = 0;
@@ -40,14 +28,19 @@ class UnionPayTest extends PHPUnit\Framework\TestCase{
 		var_dump($f);
 	}
 
+	public function testQuery(){
+		$r = $this->unionPay->query(20180204092701);
+		$this->assertEquals(UnionPay::RESPCODE_SUCCESS,$this->unionPay->respCode);
+	}
+
+	public function testPreAuth(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->preAuth($orderId,1,'test');
+		var_dump($f);
+	}
+
 	public function testFileDownload(){
-		$f = $this->unionPay->fileDownload('0119');
-		$r = explode('&',$f);
-		$rr = [];
-		foreach($r as $v){
-			$tmp = explode('=',$v);
-			$rr[$tmp[0]] = $tmp[1];
-		}
-		$this->assertEquals('00',$rr['respCode']);
+		$this->unionPay->fileDownload('0119');
+		$this->assertEquals(UnionPay::RESPCODE_SUCCESS,$this->unionPay->respCode);
 	}
 }
