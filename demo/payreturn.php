@@ -11,5 +11,4 @@ $postdata = $_REQUEST;
 $unionPay->onPayNotify($postdata,function($notifydata){
 	echo 'SUCCESS';
 	var_dump($notifydata);
-
 });

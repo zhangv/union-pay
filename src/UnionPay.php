@@ -81,7 +81,7 @@ HTML;
 	public function pay($orderId,$amt,$reqReserved = '',$reserved = '',$ext = []){
 		$params = [
 			'version' => $this->config['version'],
-			'encoding' => 'UTF-8',
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId(),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
@@ -131,9 +131,9 @@ HTML;
 	 */
 	public function payUndo($orderId,$origQryId,$txnAmt,$reserved = '',$reqReserved = '',$ext = []){
 		$params = [
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
-			'bizType' => '000000',//？？
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
+			'bizType' => '000000',
 			'txnTime' => date('YmdHis'),
 			'backUrl' => $this->config['returnUrl'],
 			'txnAmt' => $txnAmt,
@@ -182,12 +182,14 @@ HTML;
 	 * @param $origQryId
 	 * @param $refundAmt
 	 * @param string $reqReserved
+	 * @param string $reserved
+	 * @param array $ext
 	 * @return mixed
 	 */
 	public function refund($orderId,$origQryId,$refundAmt,$reqReserved = '',$reserved = '',$ext = []){
 		$params = [
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId(),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_REFUND,
@@ -250,7 +252,6 @@ HTML;
 		);
 		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
-//		var_dump($this->responseArray);
 		if($validateResp == true && !$this->validateSign($this->responseArray)){
 			throw new \Exception("Signature verification failed");
 		}
@@ -299,7 +300,7 @@ HTML;
 	public function query($orderId,$reserved = ''){
 		$params = array(
 			'version' => '5.0.0', //only 5.0.0
-			'encoding' => 'UTF-8',
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => '00',
@@ -326,7 +327,7 @@ HTML;
 	public function fileDownload($settleDate,$fileType = '00'){
 		$params = array(
 			'version' => '5.0.0', //only 5.0.0
-			'encoding' => 'UTF-8',
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
@@ -355,7 +356,7 @@ HTML;
 	public function preAuth($orderId,$amt,$orderDesc,$reqReserved = ''){
 		$params = array(
 			'version' => $this->config['version'],
-			'encoding' => 'UTF-8',
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
@@ -390,8 +391,8 @@ HTML;
 	 */
 	public function preAuthUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = ''){
 		$params = array(
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHUNDO,
@@ -425,8 +426,8 @@ HTML;
 	 */
 	public function preAuthFinish($orderId,$origQryId,$amt,$reqReserved = '',$reserved = ''){
 		$params = array(
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISH,
@@ -460,8 +461,8 @@ HTML;
 	 */
 	public function preAuthFinishUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = ''){
 		$params = array(
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISHUNDO,
@@ -493,8 +494,8 @@ HTML;
 	 */
 	public function updatePublicKey($orderId,$reqReserved = '',$reserved = '',$ext = []){
 		$params = array(
-			'version' => '5.1.0',
-			'encoding' => 'UTF-8',
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
 			'bizType' => '000000',
 			'txnTime' => date('YmdHis'),
 			'certId' => $this->getSignCertId (),

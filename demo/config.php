@@ -4,6 +4,7 @@
 
 return ['test',[
 		'version' => '5.1.0',
+		'encoding' => 'UTF-8',
 		'merId' => '700000000000001',
 		'returnUrl' => 'http://dev.git.com/union-pay/demo/payreturn.php', //前台返回
 		'notifyUrl' => 'https://Yoursites.com/demo/paynotify.php', //后台通知
