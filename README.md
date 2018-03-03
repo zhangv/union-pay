@@ -1,5 +1,5 @@
 # union-pay
-simplest union pay
+simplest union pay(银联支付)
 
 Step 1: config.php - 配置
 
