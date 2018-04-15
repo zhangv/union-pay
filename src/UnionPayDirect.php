@@ -15,10 +15,10 @@ class UnionPayDirect extends UnionPay {
 	 * @param $orderId
 	 * @param $accNo
 	 * @param $customerInfo
-	 * @param null $ext
+	 * @param array $ext
 	 * @return mixed
 	 */
-	public function backOpen($orderId,$accNo,$customerInfo,$ext = null):array{
+	public function backOpen($orderId,$accNo,$customerInfo,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -36,6 +36,7 @@ class UnionPayDirect extends UnionPay {
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
 		$params['certId'] =  $this->getSignCertId();
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -46,10 +47,10 @@ class UnionPayDirect extends UnionPay {
 	 * @param $orderId
 	 * @param $accNo
 	 * @param $customerInfo
-	 * @param null $ext
+	 * @param array $ext
 	 * @return string
 	 */
-	public function frontOpen($orderId,$accNo,$customerInfo,$ext = null){
+	public function frontOpen($orderId,$accNo,$customerInfo,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -72,7 +73,7 @@ class UnionPayDirect extends UnionPay {
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
 		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
-
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'开通');
 		return $result;
@@ -155,12 +156,10 @@ class UnionPayDirect extends UnionPay {
 	 * 支付
 	 * @param $orderId
 	 * @param $txnAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
-	 * @return string
+	 * @return array
 	 */
-	public function pay($orderId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function pay($orderId,$txnAmt,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -183,6 +182,7 @@ class UnionPayDirect extends UnionPay {
 		$customerInfo = $ext['customerInfo'];
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
 		$params['certId'] =  $this->getSignCertId();
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -192,12 +192,10 @@ class UnionPayDirect extends UnionPay {
 	 * 分期付款
 	 * @param $orderId
 	 * @param $txnAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
-	 * @return string
+	 * @return array
 	 */
-	public function payByInstallment($orderId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function payByInstallment($orderId,$txnAmt,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -224,7 +222,7 @@ class UnionPayDirect extends UnionPay {
 		//分期付款用法（商户自行设计分期付款展示界面）：
 		//【生产环境】支持的银行列表清单请联系银联业务运营接口人索要
  		$params['instalTransInfo'] = $ext['instalTransInfo'];
-
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -235,10 +233,10 @@ class UnionPayDirect extends UnionPay {
 	 * @param $orderId
 	 * @param $accNo
 	 * @param $customerInfo
-	 * @param null $ext
+	 * @param array $ext
 	 * @return string
 	 */
-	public function frontOpenPay($orderId,$txnAmt,$accNo,$customerInfo,$ext = null){
+	public function frontOpenPay($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -257,13 +255,11 @@ class UnionPayDirect extends UnionPay {
 		$params['txnTime'] = date('YmdHis');
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
-
 		$params['certId'] =  $this->getSignCertId();
 		$params['accType'] = '01';
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
 		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
-
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'开通并支付');
 		return $result;

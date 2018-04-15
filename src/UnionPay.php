@@ -49,14 +49,14 @@ class UnionPay {
 </head>
 <body>
     <div style="text-align:center">%s跳转中...</div>
-    <form id="pay_form" name="pay_form" action="%s" method="post">
+    <form id="payform" name="payform" action="%s" method="post">
         %s
         <button>提交</button>
     </form>
     <script type="text/javascript">
         document.onreadystatechange = function(){
             if(document.readyState == "complete") {
-//                document.pay_form.submit();
+                document.payform.submit();
             }
         };
     </script>
@@ -80,12 +80,10 @@ HTML;
 	 * https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=63
 	 * @param $orderId
 	 * @param $amt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$amt,$reqReserved = '',$reserved = '',$ext = []){
+	public function pay($orderId,$amt,$ext = []){
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -104,10 +102,8 @@ HTML;
 			'txnAmt' => $amt ,
 			'currencyCode' => '156',
 			'defaultPayType' => '0001',	//默认支付方式
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		];
-		if(is_array($ext)) $params = array_merge($params,$ext);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -131,12 +127,10 @@ HTML;
 	 * @param string $orderId
 	 * @param string $origQryId
 	 * @param string $txnAmt
-	 * @param string $reserved
-	 * @param string $reqReserved
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$reserved = '',$reqReserved = '',$ext = []){
+	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -153,10 +147,8 @@ HTML;
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
 			'certId' => $this->getSignCertId(),
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		];
-		if(is_array($ext)) $params = array_merge($params,$ext);
+		if(is_array($ext)) $params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -188,12 +180,10 @@ HTML;
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $refundAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -210,10 +200,8 @@ HTML;
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $refundAmt,
 			'backUrl' => $this->config['returnUrl'],
-			'reqReserved' => $reqReserved,
-			'reserved' => $reserved
 		];
-		if(is_array($ext)) $params = array_merge($params,$ext);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -229,8 +217,6 @@ HTML;
 	public function onRefundNotify($notifyData,callable $callback){
 		if($this->validateSign($notifyData)){
 			if($callback && is_callable($callback)){
-//				$queryId = $notifyData['queryId'];
-//				$traceNo = $notifyData['traceNo'];
 				return call_user_func_array( $callback , [$notifyData] );
 			}else{
 				print('ok');
@@ -245,7 +231,7 @@ HTML;
 	 * @param array $params
 	 * @param string $url
 	 * @param bool $validateResp
-	 * @return mixed
+	 * @return array
 	 * @throws \Exception
 	 */
 	protected function post($params, $url, $validateResp = true) {
@@ -258,9 +244,7 @@ HTML;
 			CURLOPT_SSLVERSION => 1
 		);
 		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
-//		var_dump($this->response);
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
-//		var_dump($this->responseArray);
 		if(count($this->responseArray) ===0 || array_keys($this->responseArray) === range(0,count($this->responseArray)-1)){//not associated array
 			if(count($this->responseArray) === 0){
 				throw new Exception("No response from remote host");
@@ -272,7 +256,6 @@ HTML;
 			$this->respMsg = $this->responseArray['respMsg'];
 			if($this->respCode == UnionPay::RESPCODE_SUCCESS){
 				if($validateResp == true && !$this->validateSign($this->responseArray)){
-					$a = $this->decryptData($this->responseArray['accNo']);
 					throw new \Exception("Signature verification failed");
 				}else {
 					return $this->responseArray;
@@ -319,10 +302,10 @@ HTML;
 	 * 交易状态查询
 	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=66
 	 * @param $orderId
-	 * @param string $reserved
+	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$reserved = ''){
+	public function query($orderId,$ext = []){
 		$params = array(
 			'version' => '5.0.0', //only 5.0.0
 			'encoding' => $this->config['encoding'],
@@ -334,9 +317,9 @@ HTML;
 			'accessType' => '0',
 			'orderId' => $orderId,
 			'merId' =>  $this->config['merId'],
-			'txnTime' => date('YmdHis'),
-			'reserved' => $reserved,
+			'txnTime' => date('YmdHis')
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->singleQueryUrl,false);
 		return $result;
@@ -375,10 +358,10 @@ HTML;
 	 * @param $orderId
 	 * @param $amt
 	 * @param $orderDesc
-	 * @param string $reqReserved
+	 * @param array $ext
 	 * @return mixed
 	 */
-	public function preAuth($orderId,$amt,$orderDesc,$reqReserved = ''){
+	public function preAuth($orderId,$amt,$orderDesc,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -397,8 +380,8 @@ HTML;
 			'txnAmt' => $amt,
 			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
-			'reqReserved' => $reqReserved,
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'预授权');
 		return $result;
@@ -410,11 +393,10 @@ HTML;
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $txnAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
-	 * @return mixed
+	 * @param array $ext
+	 * @return array
 	 */
-	public function preAuthUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = ''){
+	public function preAuthUndo($orderId,$origQryId,$txnAmt,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -431,9 +413,8 @@ HTML;
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,//交易金额，需和原预授权一致
 			'backUrl' => $this->config['notifyUrl'],
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -445,11 +426,10 @@ HTML;
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $amt
-	 * @param string $reqReserved
-	 * @param string $reserved
-	 * @return mixed
+	 * @param array $ext
+	 * @return array
 	 */
-	public function preAuthFinish($orderId,$origQryId,$amt,$reqReserved = '',$reserved = ''){
+	public function preAuthFinish($orderId,$origQryId,$amt,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -466,9 +446,8 @@ HTML;
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $amt,
 			'backUrl' => $this->config['notifyUrl'],
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -480,11 +459,10 @@ HTML;
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $txnAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
-	 * @return mixed
+	 * @param array $ext
+	 * @return array
 	 */
-	public function preAuthFinishUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = ''){
+	public function preAuthFinishUndo($orderId,$origQryId,$txnAmt,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -501,9 +479,8 @@ HTML;
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
 			'backUrl' => $this->config['notifyUrl'],
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -512,12 +489,10 @@ HTML;
 	/**
 	 * 加密公钥更新查询
 	 * @param $orderId
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function updatePublicKey($orderId,$reqReserved = '',$reserved = '',$ext = []){
+	public function updatePublicKey($orderId,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -532,9 +507,8 @@ HTML;
 			'orderId' => $orderId,
 			'merId' =>  $this->config['merId'],
 			'certType' => '01', //原预授权的queryId，可以从查询接口或者通知接口中获取
-			'reserved' => $reserved,
-			'reqReserved' => $reqReserved,
 		);
+		$params = array_merge($ext,$params);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -544,7 +518,7 @@ HTML;
 	 * 取签名证书ID(SN)
 	 * @return string
 	 */
-	public function getSignCertId(){
+	protected function getSignCertId(){
 		return $this->getCertIdPfx($this->config['signCertPath']);
 	}
 
@@ -552,7 +526,7 @@ HTML;
 	 * 取签名证书ID(SN)
 	 * @return string
 	 */
-	public function getEncryptCertId(){
+	protected function getEncryptCertId(){
 		return $this->getCertIdPfx($this->config['signCertPath']);
 	}
 
@@ -699,42 +673,9 @@ HTML;
 				if($cert == null){
 					return false;
 				}else{
-
-//					$verifyStr = preg_replace("/\r\n|\r|\n/", "\r\n", $verifyStr);
-//					$verifyStr = "accNo=cjsqgmTALZk1Rcb/l0GL+WKoExXkdZPv+kEezrB0+qpw0qQNNXjCDnV65peho8RyqPchKR3uX22Ov9A5mkUsoUtQD8Z9p1dBxv/s0C+fZOLHJz3LkJJL8xDgfAS7OGghS7gKRJt05S5WDnC5SBoIvb5+PFCB9gjOEJrOBYE3YgwBqQ/UQbPpVsk5FnOKlYQyHC5Z/BBz5YhUbarjAKwBN8aY3aLpD+PN0ii535XuMV2ZTnnkKvVtiWNHHZf5HOD5qgUOR83QSAQSEw6/5inRqI6miWCbAVeidk0JbOIqbElXUeiPDwFvGx6DmBWsydqKI4iQsfYBIrdScevzZnGvHg==&accessType=0&bizType=000301&currencyCode=156&encoding=utf-8&merId=777290058158470&orderId=20180414025538&queryId=121804140255385818028&respCode=00&respMsg=成功[0000000]&signMethod=01&signPubKeyCert=-----BEGIN CERTIFICATE-----
-//MIIEQzCCAyugAwIBAgIFEBJJZVgwDQYJKoZIhvcNAQEFBQAwWDELMAkGA1UEBhMC
-//Q04xMDAuBgNVBAoTJ0NoaW5hIEZpbmFuY2lhbCBDZXJ0aWZpY2F0aW9uIEF1dGhv
-//cml0eTEXMBUGA1UEAxMOQ0ZDQSBURVNUIE9DQTEwHhcNMTcxMTAxMDcyNDA4WhcN
-//MjAxMTAxMDcyNDA4WjB3MQswCQYDVQQGEwJjbjESMBAGA1UEChMJQ0ZDQSBPQ0Ex
-//MQ4wDAYDVQQLEwVDVVBSQTEUMBIGA1UECxMLRW50ZXJwcmlzZXMxLjAsBgNVBAMU
-//JTA0MUBaMjAxNy0xMS0xQDAwMDQwMDAwOlNJR05AMDAwMDAwMDEwggEiMA0GCSqG
-//SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDDIWO6AESrg+34HgbU9mSpgef0sl6avr1d
-//bD/IjjZYM63SoQi3CZHZUyoyzBKodRzowJrwXmd+hCmdcIfavdvfwi6x+ptJNp9d
-//EtpfEAnJk+4quriQFj1dNiv6uP8ARgn07UMhgdYB7D8aA1j77Yk1ROx7+LFeo7rZ
-//Ddde2U1opPxjIqOPqiPno78JMXpFn7LiGPXu75bwY2rYIGEEImnypgiYuW1vo9UO
-//G47NMWTnsIdy68FquPSw5FKp5foL825GNX3oJSZui8d2UDkMLBasf06Jz0JKz5AV
-//blaI+s24/iCfo8r+6WaCs8e6BDkaijJkR/bvRCQeQpbX3V8WoTLVAgMBAAGjgfQw
-//gfEwHwYDVR0jBBgwFoAUz3CdYeudfC6498sCQPcJnf4zdIAwSAYDVR0gBEEwPzA9
-//BghggRyG7yoBATAxMC8GCCsGAQUFBwIBFiNodHRwOi8vd3d3LmNmY2EuY29tLmNu
-//L3VzL3VzLTE0Lmh0bTA5BgNVHR8EMjAwMC6gLKAqhihodHRwOi8vdWNybC5jZmNh
-//LmNvbS5jbi9SU0EvY3JsMjQ4NzIuY3JsMAsGA1UdDwQEAwID6DAdBgNVHQ4EFgQU
-//mQQLyuqYjES7qKO+zOkzEbvdFwgwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUF
-//BwMEMA0GCSqGSIb3DQEBBQUAA4IBAQAujhBuOcuxA+VzoUH84uoFt5aaBM3vGlpW
-//KVMz6BUsLbIpp1ho5h+LaMnxMs6jdXXDh/du8X5SKMaIddiLw7ujZy1LibKy2jYi
-//YYfs3tbZ0ffCKQtv78vCgC+IxUUurALY4w58fRLLdu8u8p9jyRFHsQEwSq+W5+bP
-//MTh2w7cDd9h+6KoCN6AMI1Ly7MxRIhCbNBL9bzaxF9B5GK86ARY7ixkuDCEl4XCF
-//JGxeoye9R46NqZ6AA/k97mJun//gmUjStmb9PUXA59fR5suAB5o/5lBySZ8UXkrI
-//pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
-//-----END CERTIFICATE-----&txnAmt=1000&txnSubType=01&txnTime=20180414025538&txnType=01&version=5.1.0";
-//					$signaturebase64 = "f5Gz5srn7RvdF2qtAHcakoiwVbSO8cOf9CVX9AJ3oCyjxsdTTXQmx+JQZ8Aw1y2ON+dvFxWC5Z4X/lOmQRSXs3fUZWaErWkgTqBO9Wrl5x3f6FgnB3sGuCXSPs/fm/mXhzv3LVrsmx2EmAxgsuDc7U+eRej/kfwSqI3E2wgHdteQW9jVhG8hxllO7yu9OTfcoPlo87quisMtggeXrfprpuBWKRTPRqsWUypP3+cskVZmc65XL7AGsz74HhS5kwZ9Sc2LejrQKC73Q4wzREdwKUwiPAnoL96ryDqca5+RT1WYq9u3YtxjQUzFTTXypMtZlH92P++MK+rppE9ck5rpyg==";
-//					var_dump($verifyStr);
 					$verifySha256 = hash('sha256', $verifyStr);
 					$signature = base64_decode($signaturebase64);
-//					var_dump($verifySha256);
-//					var_dump($signaturebase64);
-//					var_dump($cert);
 					$result = openssl_verify ( $verifySha256, $signature,$cert, "sha256" );
-//					var_dump($result);
 					if($result === -1) {
 						throw new \Exception('Verify Error:'.openssl_error_string());
 					}
@@ -885,7 +826,6 @@ HTML;
 	protected function decryptData($data) {
 		$cert_path = $this->config['signCertPath'];
 		$cert_pwd = $this->config['signCertPwd'];
-
 		$data = base64_decode ( $data );
 		$private_key = $this->getSignKeyFromPfx ( $cert_path, $cert_pwd);
 		openssl_private_decrypt ( $data, $crypted, $private_key );
