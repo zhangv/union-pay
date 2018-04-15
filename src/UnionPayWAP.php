@@ -23,7 +23,7 @@ class UnionPayWAP extends UnionPay {
 	 * @return string
 	 */
 	public function pay($orderId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
-		$ext['channelType'] = '08';
+		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
 		$result = parent::pay($orderId,$txnAmt,$reqReserved,$reserved,$ext);
 		return $result;
 	}
@@ -39,7 +39,7 @@ class UnionPayWAP extends UnionPay {
 	 * @return mixed
 	 */
 	public function payUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
-		$ext['channelType'] = '08';
+		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
 		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$reqReserved,$reserved,$ext);
 		return $result;
 	}
@@ -56,7 +56,7 @@ class UnionPayWAP extends UnionPay {
 	 * @return mixed
 	 */
 	public function refund($orderId,$origQryId,$refundAmt,$reqReserved = '',$reserved = '',$ext = []){
-		$ext['channelType'] = '08';
+		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
 		$result = parent::refund($orderId,$origQryId,$refundAmt,$reqReserved,$reserved,$ext);
 		return $result;
 	}

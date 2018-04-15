@@ -5,7 +5,7 @@
  * Date: 01/02/2018
  * Time: 22:29
  */
-
+require_once __DIR__ . '/../src/UnionPay.php';
 use zhangv\unionpay\UnionPay;
 
 class UnionPayTest extends PHPUnit\Framework\TestCase{

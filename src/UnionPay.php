@@ -1,6 +1,7 @@
 <?php
 namespace zhangv\unionpay;
 
+use \Exception;
 /**
  * 银联网关支付
  * @license MIT
@@ -14,7 +15,13 @@ class UnionPay {
 	const TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',TXNTYPE_REFUND = '04',
 		TXNTYPE_CONSUMEUNDO = '31',TXNTYPE_PREAUTHUNDO = '32',TXNTYPE_PREAUTHFINISHUNDO = '33',
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
-	const RESPCODE_SUCCESS = '00';
+	const BIZTYPE_GATEWAY = '000201', //网关
+		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
+		BIZTYPE_TOKEN = '000902'; //Token支付（无跳转token版）
+	const ACCESSTYPE_MERCHANT = '0',//商户直连接入
+		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
+		ACCESSTYPE_PLATFORM = '2';//平台商户接入
+	const RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
 	public $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
 	public $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";
 	public $batchTransUrl = "https://gateway.95516.com/gateway/api/batchTrans.do";
@@ -49,7 +56,7 @@ class UnionPay {
     <script type="text/javascript">
         document.onreadystatechange = function(){
             if(document.readyState == "complete") {
-                document.pay_form.submit();
+//                document.pay_form.submit();
             }
         };
     </script>
@@ -86,7 +93,7 @@ HTML;
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => '000201',
+			'bizType' => UnionPay::BIZTYPE_GATEWAY,
 			'channelType' => '07',
 			'frontUrl' => $this->config['returnUrl'],
 			'backUrl' => $this->config['notifyUrl'],
@@ -194,7 +201,7 @@ HTML;
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
-			'bizType' => '000201',
+			'bizType' => UnionPay::BIZTYPE_GATEWAY,
 			'accessType' => '0',
 			'channelType' => '07',
 			'orderId' => $orderId,
@@ -222,8 +229,8 @@ HTML;
 	public function onRefundNotify($notifyData,callable $callback){
 		if($this->validateSign($notifyData)){
 			if($callback && is_callable($callback)){
-				$queryId = $notifyData['queryId'];
-				$traceNo = $notifyData['traceNo'];
+//				$queryId = $notifyData['queryId'];
+//				$traceNo = $notifyData['traceNo'];
 				return call_user_func_array( $callback , [$notifyData] );
 			}else{
 				print('ok');
@@ -251,26 +258,44 @@ HTML;
 			CURLOPT_SSLVERSION => 1
 		);
 		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
+//		var_dump($this->response);
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
-		if($validateResp == true && !$this->validateSign($this->responseArray)){
-			throw new \Exception("Signature verification failed");
-		}
-		$this->respCode = $this->responseArray['respCode'];
-		$this->respMsg = $this->responseArray['respMsg'];
-		if($this->respCode == UnionPay::RESPCODE_SUCCESS){
-			return $this->responseArray;
+//		var_dump($this->responseArray);
+		if(count($this->responseArray) ===0 || array_keys($this->responseArray) === range(0,count($this->responseArray)-1)){//not associated array
+			if(count($this->responseArray) === 0){
+				throw new Exception("No response from remote host");
+			}else{
+				throw new Exception("Response error - {$this->responseArray[0]}");
+			}
 		}else{
-			throw new \Exception($this->respMsg);
+			$this->respCode = $this->responseArray['respCode'];
+			$this->respMsg = $this->responseArray['respMsg'];
+			if($this->respCode == UnionPay::RESPCODE_SUCCESS){
+				if($validateResp == true && !$this->validateSign($this->responseArray)){
+					$a = $this->decryptData($this->responseArray['accNo']);
+					throw new \Exception("Signature verification failed");
+				}else {
+					return $this->responseArray;
+				}
+			}else{
+				throw new \Exception($this->respMsg);
+			}
 		}
-
 	}
 
 	private function convertQueryStringToArray($query){
+		if(!$query || trim($query)==='') {
+			return [];
+		}
 		$r = explode('&',$query);
 		$rr = [];
 		foreach($r as $v){
-			$tmp = explode('=',$v);
-			$rr[$tmp[0]] = $tmp[1];
+			$tmp = explode('=',$v,2); //NOTE: the signature contains '==', so only the first '=' should be taken
+			if(count($tmp)>1){
+				$rr[$tmp[0]] = $tmp[1];
+			}else{
+				$rr[] = $tmp[0];
+			}
 		}
 		return $rr;
 	}
@@ -326,7 +351,7 @@ HTML;
 	 */
 	public function fileDownload($settleDate,$fileType = '00'){
 		$params = array(
-			'version' => '5.0.0', //only 5.0.0
+			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
 			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
@@ -360,7 +385,7 @@ HTML;
 			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
-			'bizType' => '000201',
+			'bizType' => UnionPay::BIZTYPE_GATEWAY,
 			'frontUrl' =>  $this->config['returnUrl'],
 			'backUrl' => $this->config['notifyUrl'],
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
@@ -432,7 +457,7 @@ HTML;
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISH,
 			'txnSubType' => '00',
-			'bizType' => '000201',
+			'bizType' => UnionPay::BIZTYPE_GATEWAY,
 			'accessType' => '0',
 			'channelType' => '07',
 			'orderId' => $orderId,//商户订单号，重新产生，不同于原消费
@@ -524,6 +549,14 @@ HTML;
 	}
 
 	/**
+	 * 取签名证书ID(SN)
+	 * @return string
+	 */
+	public function getEncryptCertId(){
+		return $this->getCertIdPfx($this->config['signCertPath']);
+	}
+
+	/**
 	 * 取.pfx格式证书ID(SN)
 	 * @return string
 	 */
@@ -531,6 +564,17 @@ HTML;
 		$pkcs12certdata = file_get_contents($path);
 		openssl_pkcs12_read($pkcs12certdata, $certs, $this->config['signCertPwd']);
 		$x509data = $certs['cert'];
+		openssl_x509_read($x509data);
+		$certdata = openssl_x509_parse($x509data);
+		return $certdata['serialNumber'];
+	}
+
+	/**
+	 * 取.cer格式证书ID(SN)
+	 * @return string
+	 */
+	protected function getCertIdCer($path){
+		$x509data = file_get_contents($path);
 		openssl_x509_read($x509data);
 		$certdata = openssl_x509_parse($x509data);
 		return $certdata['serialNumber'];
@@ -561,7 +605,7 @@ HTML;
 	protected function sign($params,$signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
 		ksort($signData);
-		$signQueryString = $this->arrayToString($signData);
+		$signQueryString = $this->arrayToString($signData,true);
 		if($signMethod == UnionPay::SIGNMETHOD_RSA) {
 			if($params['version'] == '5.0.0'){
 				$datasha1 = sha1($signQueryString);
@@ -577,7 +621,7 @@ HTML;
 				} else {
 					throw new \Exception("Error while signing");
 				}
-			}else throw new \Exception("Unsuported version - {$params['version']}");
+			}else throw new \Exception("Unsupported version - {$params['version']}");
 		} else {
 			throw new \Exception("Unsupported Sign Method - {$signMethod}");
 		}
@@ -586,11 +630,17 @@ HTML;
 	/**
 	 * 数组转换成字符串
 	 * @param array $arr
+	 * @param boolean $sort
 	 * @return string
 	 */
-	protected function arrayToString($arr){
+	protected function arrayToString($arr,$sort = false){
 		$str = '';
-		foreach($arr as $key => $value) {
+		$para = $arr;
+		if($sort){
+			ksort ( $para );
+			reset ( $para );
+		}
+		foreach($para as $key => $value) {
 			if(trim($value)=='') continue;
 			$str .= $key.'='.$value.'&';
 		}
@@ -626,7 +676,7 @@ HTML;
 	 */
 	public function validateSign($params){
 		if($params['signMethod'] == UnionPay::SIGNMETHOD_RSA){
-			$signature = base64_decode($params['signature']);
+			$signaturebase64 = $params['signature'];
 			$verifyArr = $params;
 			unset($verifyArr['signature']);
 			ksort($verifyArr);
@@ -636,6 +686,7 @@ HTML;
 				$certId = $params['certId'];
 				$publicKey = $this->getVerifyPublicKey($certId);
 				$verifySha1 = sha1($verifyStr,FALSE);
+				$signature = base64_decode($signaturebase64);
 				$result = openssl_verify($verifySha1, $signature, $publicKey,OPENSSL_ALGO_SHA1);
 				if($result === -1) {
 					throw new \Exception('Verify Error:'.openssl_error_string());
@@ -644,12 +695,46 @@ HTML;
 			}elseif($params['version'] == '5.1.0'){
 				$signPubKeyCert = $params['signPubKeyCert'];
 				$cert = $this->verifyAndGetVerifyCert($signPubKeyCert);
+
 				if($cert == null){
 					return false;
 				}else{
+
+//					$verifyStr = preg_replace("/\r\n|\r|\n/", "\r\n", $verifyStr);
+//					$verifyStr = "accNo=cjsqgmTALZk1Rcb/l0GL+WKoExXkdZPv+kEezrB0+qpw0qQNNXjCDnV65peho8RyqPchKR3uX22Ov9A5mkUsoUtQD8Z9p1dBxv/s0C+fZOLHJz3LkJJL8xDgfAS7OGghS7gKRJt05S5WDnC5SBoIvb5+PFCB9gjOEJrOBYE3YgwBqQ/UQbPpVsk5FnOKlYQyHC5Z/BBz5YhUbarjAKwBN8aY3aLpD+PN0ii535XuMV2ZTnnkKvVtiWNHHZf5HOD5qgUOR83QSAQSEw6/5inRqI6miWCbAVeidk0JbOIqbElXUeiPDwFvGx6DmBWsydqKI4iQsfYBIrdScevzZnGvHg==&accessType=0&bizType=000301&currencyCode=156&encoding=utf-8&merId=777290058158470&orderId=20180414025538&queryId=121804140255385818028&respCode=00&respMsg=成功[0000000]&signMethod=01&signPubKeyCert=-----BEGIN CERTIFICATE-----
+//MIIEQzCCAyugAwIBAgIFEBJJZVgwDQYJKoZIhvcNAQEFBQAwWDELMAkGA1UEBhMC
+//Q04xMDAuBgNVBAoTJ0NoaW5hIEZpbmFuY2lhbCBDZXJ0aWZpY2F0aW9uIEF1dGhv
+//cml0eTEXMBUGA1UEAxMOQ0ZDQSBURVNUIE9DQTEwHhcNMTcxMTAxMDcyNDA4WhcN
+//MjAxMTAxMDcyNDA4WjB3MQswCQYDVQQGEwJjbjESMBAGA1UEChMJQ0ZDQSBPQ0Ex
+//MQ4wDAYDVQQLEwVDVVBSQTEUMBIGA1UECxMLRW50ZXJwcmlzZXMxLjAsBgNVBAMU
+//JTA0MUBaMjAxNy0xMS0xQDAwMDQwMDAwOlNJR05AMDAwMDAwMDEwggEiMA0GCSqG
+//SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDDIWO6AESrg+34HgbU9mSpgef0sl6avr1d
+//bD/IjjZYM63SoQi3CZHZUyoyzBKodRzowJrwXmd+hCmdcIfavdvfwi6x+ptJNp9d
+//EtpfEAnJk+4quriQFj1dNiv6uP8ARgn07UMhgdYB7D8aA1j77Yk1ROx7+LFeo7rZ
+//Ddde2U1opPxjIqOPqiPno78JMXpFn7LiGPXu75bwY2rYIGEEImnypgiYuW1vo9UO
+//G47NMWTnsIdy68FquPSw5FKp5foL825GNX3oJSZui8d2UDkMLBasf06Jz0JKz5AV
+//blaI+s24/iCfo8r+6WaCs8e6BDkaijJkR/bvRCQeQpbX3V8WoTLVAgMBAAGjgfQw
+//gfEwHwYDVR0jBBgwFoAUz3CdYeudfC6498sCQPcJnf4zdIAwSAYDVR0gBEEwPzA9
+//BghggRyG7yoBATAxMC8GCCsGAQUFBwIBFiNodHRwOi8vd3d3LmNmY2EuY29tLmNu
+//L3VzL3VzLTE0Lmh0bTA5BgNVHR8EMjAwMC6gLKAqhihodHRwOi8vdWNybC5jZmNh
+//LmNvbS5jbi9SU0EvY3JsMjQ4NzIuY3JsMAsGA1UdDwQEAwID6DAdBgNVHQ4EFgQU
+//mQQLyuqYjES7qKO+zOkzEbvdFwgwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUF
+//BwMEMA0GCSqGSIb3DQEBBQUAA4IBAQAujhBuOcuxA+VzoUH84uoFt5aaBM3vGlpW
+//KVMz6BUsLbIpp1ho5h+LaMnxMs6jdXXDh/du8X5SKMaIddiLw7ujZy1LibKy2jYi
+//YYfs3tbZ0ffCKQtv78vCgC+IxUUurALY4w58fRLLdu8u8p9jyRFHsQEwSq+W5+bP
+//MTh2w7cDd9h+6KoCN6AMI1Ly7MxRIhCbNBL9bzaxF9B5GK86ARY7ixkuDCEl4XCF
+//JGxeoye9R46NqZ6AA/k97mJun//gmUjStmb9PUXA59fR5suAB5o/5lBySZ8UXkrI
+//pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
+//-----END CERTIFICATE-----&txnAmt=1000&txnSubType=01&txnTime=20180414025538&txnType=01&version=5.1.0";
+//					$signaturebase64 = "f5Gz5srn7RvdF2qtAHcakoiwVbSO8cOf9CVX9AJ3oCyjxsdTTXQmx+JQZ8Aw1y2ON+dvFxWC5Z4X/lOmQRSXs3fUZWaErWkgTqBO9Wrl5x3f6FgnB3sGuCXSPs/fm/mXhzv3LVrsmx2EmAxgsuDc7U+eRej/kfwSqI3E2wgHdteQW9jVhG8hxllO7yu9OTfcoPlo87quisMtggeXrfprpuBWKRTPRqsWUypP3+cskVZmc65XL7AGsz74HhS5kwZ9Sc2LejrQKC73Q4wzREdwKUwiPAnoL96ryDqca5+RT1WYq9u3YtxjQUzFTTXypMtZlH92P++MK+rppE9ck5rpyg==";
+//					var_dump($verifyStr);
 					$verifySha256 = hash('sha256', $verifyStr);
-//					$result = openssl_verify ( $verifySha256, $signature,$cert, "sha256" );
-					$result = openssl_verify ( $verifySha256, $signature,$cert, OPENSSL_ALGO_SHA256 );
+					$signature = base64_decode($signaturebase64);
+//					var_dump($verifySha256);
+//					var_dump($signaturebase64);
+//					var_dump($cert);
+					$result = openssl_verify ( $verifySha256, $signature,$cert, "sha256" );
+//					var_dump($result);
 					if($result === -1) {
 						throw new \Exception('Verify Error:'.openssl_error_string());
 					}
@@ -661,6 +746,12 @@ HTML;
 		}
 	}
 
+	/**
+	 * 检查返回结果中的公钥证书是否有效
+	 * @param $certBase64String
+	 * @return mixed|null
+	 * @throws Exception
+	 */
 	public function verifyAndGetVerifyCert($certBase64String){
 		if (array_key_exists($certBase64String, UnionPay::$verifyCerts510)){
 			return UnionPay::$verifyCerts510[$certBase64String];
@@ -748,17 +839,6 @@ HTML;
 		return self::$verifyPublicKeys;
 	}
 
-	/**
-	 * 取.cer格式证书ID(SN)
-	 * @return string
-	 */
-	protected function getCertIdCer($path){
-		$x509data = file_get_contents($path);
-		openssl_x509_read($x509data);
-		$certdata = openssl_x509_parse($x509data);
-		return $certdata['serialNumber'];
-	}
-
 	protected function validateBySecureKey($params, $secureKey) {
 		$signature = $params['signature'];
 		$verifyArr = $params;
@@ -777,4 +857,49 @@ HTML;
 		}
 	}
 
+	/**
+	 * 加密数据
+	 * @param string $data
+	 * @return string
+	 * @throws Exception
+	 */
+	public function encryptData($data) {
+		$cert_path = $this->config['encryptCertPath'];
+		$public_key = file_get_contents ( $cert_path );
+		if($public_key === false ){
+			throw new Exception('Fail reading encrypt certificate');
+		}
+		if(!openssl_x509_read ( $public_key )){
+			throw new Exception( " openssl_x509_read fail。");
+		}
+		openssl_public_encrypt ( $data, $crypted, $public_key );
+		return base64_encode ( $crypted );
+	}
+
+	/**
+	 * 解密数据
+	 * @param string $data
+	 * @return string
+	 * @throws Exception
+	 */
+	protected function decryptData($data) {
+		$cert_path = $this->config['signCertPath'];
+		$cert_pwd = $this->config['signCertPwd'];
+
+		$data = base64_decode ( $data );
+		$private_key = $this->getSignKeyFromPfx ( $cert_path, $cert_pwd);
+		openssl_private_decrypt ( $data, $crypted, $private_key );
+		return $crypted;
+	}
+
+	private function getSignKeyFromPfx($certPath, $certPwd){
+		$pkcs12certdata = file_get_contents ( $certPath );
+		if($pkcs12certdata === false ){
+			throw new Exception(  "file_get_contents fail。");
+		}
+		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) == FALSE ){
+			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
+		}
+		return $certs ['pkey'];
+	}
 }
