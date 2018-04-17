@@ -56,7 +56,7 @@ class UnionPay {
     <script type="text/javascript">
         document.onreadystatechange = function(){
             if(document.readyState == "complete") {
-                document.payform.submit();
+                //document.payform.submit();
             }
         };
     </script>
@@ -87,7 +87,6 @@ HTML;
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId(),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
@@ -103,7 +102,7 @@ HTML;
 			'currencyCode' => '156',
 			'defaultPayType' => '0001',	//默认支付方式
 		];
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -146,9 +145,8 @@ HTML;
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
-			'certId' => $this->getSignCertId(),
 		];
-		if(is_array($ext)) $params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -187,7 +185,6 @@ HTML;
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId(),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
@@ -201,7 +198,7 @@ HTML;
 			'txnAmt' => $refundAmt,
 			'backUrl' => $this->config['returnUrl'],
 		];
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -309,7 +306,6 @@ HTML;
 		$params = array(
 			'version' => '5.0.0', //only 5.0.0
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => '00',
 			'txnSubType' => '00',
@@ -319,7 +315,7 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'txnTime' => date('YmdHis')
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->singleQueryUrl,false);
 		return $result;
@@ -336,7 +332,6 @@ HTML;
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnSubType' => '01',
@@ -365,7 +360,6 @@ HTML;
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_GATEWAY,
@@ -381,7 +375,7 @@ HTML;
 			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'预授权');
 		return $result;
@@ -400,7 +394,6 @@ HTML;
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHUNDO,
 			'txnSubType' => '00',
@@ -414,7 +407,7 @@ HTML;
 			'txnAmt' => $txnAmt,//交易金额，需和原预授权一致
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -433,7 +426,6 @@ HTML;
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISH,
 			'txnSubType' => '00',
@@ -447,7 +439,7 @@ HTML;
 			'txnAmt' => $amt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -466,7 +458,6 @@ HTML;
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISHUNDO,
 			'txnSubType' => '00',
@@ -480,7 +471,7 @@ HTML;
 			'txnAmt' => $txnAmt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -498,7 +489,6 @@ HTML;
 			'encoding' => $this->config['encoding'],
 			'bizType' => '000000',
 			'txnTime' => date('YmdHis'),
-			'certId' => $this->getSignCertId (),
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => UnionPay::TXNTYPE_UPDATEPUBLICKEY,
 			'txnSubType' => '00',
@@ -508,7 +498,7 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'certType' => '01', //原预授权的queryId，可以从查询接口或者通知接口中获取
 		);
-		$params = array_merge($ext,$params);
+		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
@@ -578,6 +568,7 @@ HTML;
 	 */
 	protected function sign($params,$signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
+		if(empty($signData['certId'])) $signData['certId'] =  $this->getSignCertId();
 		ksort($signData);
 		$signQueryString = $this->arrayToString($signData,true);
 		if($signMethod == UnionPay::SIGNMETHOD_RSA) {

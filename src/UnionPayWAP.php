@@ -17,14 +17,12 @@ class UnionPayWAP extends UnionPay {
 	 * 支付
 	 * @param $orderId
 	 * @param $txnAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function pay($orderId,$txnAmt,$ext = []){
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::pay($orderId,$txnAmt,$reqReserved,$reserved,$ext);
+		$result = parent::pay($orderId,$txnAmt,$ext);
 		return $result;
 	}
 
@@ -33,14 +31,12 @@ class UnionPayWAP extends UnionPay {
 	 * @param string $orderId
 	 * @param string $origQryId
 	 * @param string $txnAmt
-	 * @param string $reserved
-	 * @param string $reqReserved
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$reqReserved,$reserved,$ext);
+		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
 		return $result;
 	}
 
@@ -50,14 +46,12 @@ class UnionPayWAP extends UnionPay {
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $refundAmt
-	 * @param string $reqReserved
-	 * @param string $reserved
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$reqReserved = '',$reserved = '',$ext = []){
+	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::refund($orderId,$origQryId,$refundAmt,$reqReserved,$reserved,$ext);
+		$result = parent::refund($orderId,$origQryId,$refundAmt,$ext);
 		return $result;
 	}
 

@@ -1,7 +1,9 @@
 <?php
-//无跳转测试配置
+/**
+ * 无跳转测试配置
+ * 测试卡信息：https://open.unionpay.com/ajweb/help/faq/list?id=4&level=0&from=0
+ */
 //if(file_exists(__DIR__ .'/config-prod.php')) return ['prod',$config = include './config-prod.php'];
-//测试卡信息：https://open.unionpay.com/ajweb/help/faq/list?id=4&level=0&from=0
 return ['test',
 	[
 		'version' => '5.1.0',
@@ -54,7 +56,7 @@ return ['test',
 				'customerNm' => '张三', //姓名
 				'smsCode' => '123456', //123456（手机）/111111（PC）
 				'cvn2' => '248',
-				'expired' => '1219',
+				'expired' => '1912',
 			],
 			[//招商银行借记卡 前台类交易
 				'accNo' => '6226090000000048',

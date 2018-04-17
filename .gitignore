@@ -1,5 +1,5 @@
 .idea
-vendor
+vendor/*
 demo/config-prod.php
 demo/config-prod0.php
 demo/cert/*prod*
