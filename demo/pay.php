@@ -7,11 +7,10 @@ use zhangv\unionPay\UnionPay;
 list($mode,$config) = include './config.php';
 $unionPay = new UnionPay($config,$mode);
 
-$payOrderNo = date('YmdHis');
-$sum = 1;
-$desc = 'desc';
-
-$html = $unionPay->pay($payOrderNo,$sum,$desc,'');
+$orderId = date('YmdHis');
+$amt = 1;
+$ext['desc'] = 'desc';
+$html = $unionPay->pay($orderId,$amt,$ext);
 echo $html;
 
 /**

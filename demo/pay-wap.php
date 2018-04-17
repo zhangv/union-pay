@@ -9,11 +9,11 @@ $config = include './config.php';
 list($mode,$config) = include './config.php';
 $unionPay = new UnionPayWAP($config,$mode);
 
-$payOrderNo = date('YmdHis');
-$sum = 1;
-$desc = 'desc';
+$orderId = date('YmdHis');
+$amt = 1;
+$ext['desc'] = 'desc';
 
-$html = $unionPay->pay($payOrderNo,$sum,$desc,'');
+$html = $unionPay->pay($orderId,$amt,$ext);
 echo $html;
 
 /**

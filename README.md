@@ -1,17 +1,19 @@
 # union-pay
-simplest union pay(银联支付)
+simplest union pay(银联支付)，目前支持网关（PC/WAP)、无跳转（标准版/Token版）
 
-Step 1: config.php - 配置
+###Step 1: config.php - 配置
 
 ```php
-return ['test',[
+<?php
+return ['test', [
 		'version' => '5.1.0',
+		'signMethod'=> '01', //RSA
 		'encoding' => 'UTF-8',
 		'merId' => '700000000000001',
-		'returnUrl' => 'http://Yoursites.com/union-pay/demo/payreturn.php', //前台返回
-		'notifyUrl' => 'https://Yoursites.com/demo/paynotify.php', //后台通知
-		'frontFailUrl'   => 'http://Yoursites.com/union-pay/demo/payfail.php',
-		'refundnotifyUrl' => 'https://Yoursites.com/demo/refundnotify.php',
+		'returnUrl' => 'http://dev.git.com/union-pay/demo/payreturn.php', //前台网关支付返回
+		'notifyUrl' => 'http://dev.git.com/demo/paynotify.php', //后台通知
+		'frontFailUrl'   => 'http://dev.git.com/union-pay/demo/payfail.php',
+		'refundnotifyUrl' => 'http://dev.git.com.com/demo/refundnotify.php',
 		'signCertPath' => dirname(__FILE__).'/cert/acp_test_sign.pfx',
 		'signCertPwd' => '000000', //签名证书密码
 		'verifyCertPath' => dirname(__FILE__).'/cert/5.0.0/acp_test_verify_sign.cer',  //v5.0.0 required NOTE:该测试环境证书已失效，推荐使用5.1.0
@@ -24,9 +26,10 @@ return ['test',[
 ```
 
 
-Step 2: pay.php - 支付
+###Step 2: pay.php - 支付
 
 ```php
+<?php
 require_once __DIR__ . "/../src/UnionPay.php";
 require_once __DIR__ . "/../src/HttpClient.php";
 use zhangv\unionPay\UnionPay;
@@ -40,12 +43,12 @@ $desc = 'desc';
 
 $html = $unionPay->pay($payOrderNo,$sum,$desc,'');
 echo $html;
-
 ```
 
-Step 3: payreturn.php - 支付完成前台返回
+###Step 3: payreturn.php - 支付完成前台返回
 
 ```php
+<?php
 require_once __DIR__ . "/../src/UnionPay.php";
 require_once __DIR__ . "/../src/HttpClient.php";
 use zhangv\unionPay\UnionPay;
@@ -60,9 +63,9 @@ $unionPay->onPayNotify($postdata,function($notifydata){
 });
 ```
 
-Step 4: paynotifyn.php - 支付完成后台通知
-
+###Step 4: paynotify.php - 支付完成后台通知
 ```php
+<?php
 require_once __DIR__ . "/../src/UnionPay.php";
 require_once __DIR__ . "/../src/HttpClient.php";
 use zhangv\unionPay\UnionPay;

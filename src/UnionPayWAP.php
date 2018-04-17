@@ -9,8 +9,8 @@ namespace zhangv\unionpay;
  * */
 class UnionPayWAP extends UnionPay {
 
-	public function __construct($config){
-		parent::__construct($config);
+	public function __construct($config,$mode = UnionPay::MODE_PROD){
+		parent::__construct($config,$mode);
 	}
 
 	/**

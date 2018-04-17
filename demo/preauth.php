@@ -11,7 +11,7 @@ $payOrderNo = date('YmdHis');
 $amt = 1;
 $desc = 'desc';
 
-$html = $unionPay->preAuth($payOrderNo,$amt,$desc,'');
+$html = $unionPay->preAuth($payOrderNo,$amt,$desc);
 echo $html;
 
 /**
