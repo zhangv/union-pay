@@ -2,12 +2,12 @@
 namespace zhangv\unionpay;
 
 /**
- * 银联WAP支付
+ * 银联手机网页支付
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/detail?id=66
  * */
-class UnionPayWAP extends UnionPay {
+class UnionPayWap extends UnionPay {
 
 	public function __construct($config,$mode = UnionPay::MODE_PROD){
 		parent::__construct($config,$mode);

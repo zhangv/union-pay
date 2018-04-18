@@ -56,7 +56,7 @@ class UnionPay {
     <script type="text/javascript">
         document.onreadystatechange = function(){
             if(document.readyState == "complete") {
-                //document.payform.submit();
+                document.payform.submit();
             }
         };
     </script>
@@ -70,6 +70,7 @@ HTML;
 		if($mode == UnionPay::MODE_TEST){
 			$this->frontTransUrl = 'https://gateway.test.95516.com/gateway/api/frontTransReq.do';
 			$this->backTransUrl = 'https://gateway.test.95516.com/gateway/api/backTransReq.do';
+			$this->appTransUrl = "https://gateway.test.95516.com/gateway/api/appTransReq.do";
 			$this->singleQueryUrl = 'https://gateway.test.95516.com/gateway/api/queryTrans.do';
 			$this->fileDownloadUrl = 'https://filedownload.test.95516.com/';
 		}
@@ -102,6 +103,7 @@ HTML;
 			'currencyCode' => '156',
 			'defaultPayType' => '0001',	//默认支付方式
 		];
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
@@ -122,7 +124,6 @@ HTML;
 
 	/**
 	 * 消费撤销
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=64
 	 * @param string $orderId
 	 * @param string $origQryId
 	 * @param string $txnAmt
@@ -146,6 +147,7 @@ HTML;
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
 		];
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
@@ -174,7 +176,6 @@ HTML;
 
 	/**
 	 * 退款
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=65
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $refundAmt
@@ -198,6 +199,7 @@ HTML;
 			'txnAmt' => $refundAmt,
 			'backUrl' => $this->config['returnUrl'],
 		];
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
@@ -241,29 +243,26 @@ HTML;
 			CURLOPT_SSLVERSION => 1
 		);
 		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
+		if(!$this->response || $this->response == '') throw new Exception("No response from remote host");
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
-		if(count($this->responseArray) ===0 || array_keys($this->responseArray) === range(0,count($this->responseArray)-1)){//not associated array
-			if(count($this->responseArray) === 0){
-				throw new Exception("No response from remote host");
-			}else{
-				throw new Exception("Response error - {$this->responseArray[0]}");
+		if(empty($this->responseArray['respCode'])){
+			throw new Exception("Response error - {$this->response}, request: {$postbody}");
+		}
+
+		$this->respCode = $this->responseArray['respCode'];
+		$this->respMsg = $this->responseArray['respMsg'];
+		if($this->respCode == UnionPay::RESPCODE_SUCCESS){
+			if($validateResp == true && !$this->validateSign($this->responseArray)){
+				throw new \Exception("Signature verification failed, response: {$this->response}");
+			}else {
+				return $this->responseArray;
 			}
 		}else{
-			$this->respCode = $this->responseArray['respCode'];
-			$this->respMsg = $this->responseArray['respMsg'];
-			if($this->respCode == UnionPay::RESPCODE_SUCCESS){
-				if($validateResp == true && !$this->validateSign($this->responseArray)){
-					throw new \Exception("Signature verification failed");
-				}else {
-					return $this->responseArray;
-				}
-			}else{
-				throw new \Exception($this->respMsg);
-			}
+			throw new \Exception($this->respMsg . ' - request:'.$postbody.', response:'. $this->response);
 		}
 	}
 
-	private function convertQueryStringToArray($query){
+	private function convertQueryStringToArray0($query){
 		if(!$query || trim($query)==='') {
 			return [];
 		}
@@ -278,6 +277,65 @@ HTML;
 			}
 		}
 		return $rr;
+	}
+
+	private function convertQueryStringToArray($str, $urldecode = false){
+		$result = array();
+		$len = strlen($str);
+		$temp = "";
+		$curChar = "";
+		$key = "";
+		$isKey = true;
+		$isOpen = false;
+		$openName = "\0";
+
+		for($i=0; $i<$len; $i++){
+			$curChar = $str[$i];
+			if($isOpen){
+				if( $curChar == $openName){
+					$isOpen = false;
+				}
+				$temp .= $curChar;
+			} elseif ($curChar == "{"){
+				$isOpen = true;
+				$openName = "}";
+				$temp .= $curChar;
+			} elseif ($curChar == "["){
+				$isOpen = true;
+				$openName = "]";
+				$temp .= $curChar;
+			} elseif ($isKey && $curChar == "="){
+				$key = $temp;
+				$temp = "";
+				$isKey = false;
+			} elseif ( $curChar == "&" && !$isOpen){
+				$this->putKeyValueToDictionary($temp, $isKey, $key, $result, $urldecode);
+				$temp = "";
+				$isKey = true;
+			} else {
+				$temp .= $curChar;
+			}
+		}
+		$this->putKeyValueToDictionary($temp, $isKey, $key, $result, $urldecode);
+		return $result;
+	}
+
+	private function putKeyValueToDictionary($temp, $isKey, $key, &$result, $needUrlDecode) {
+		if ($isKey) {
+			$key = $temp;
+			if (strlen ( $key ) == 0) {
+				return false;
+			}
+			$result [$key] = "";
+		} else {
+			if (strlen ( $key ) == 0) {
+				return false;
+			}
+			if ($needUrlDecode)
+				$result [$key] = urldecode ( $temp );
+			else
+				$result [$key] = $temp;
+		}
 	}
 
 	/**
@@ -297,7 +355,6 @@ HTML;
 
 	/**
 	 * 交易状态查询
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=66
 	 * @param $orderId
 	 * @param array $ext
 	 * @return mixed
@@ -315,6 +372,7 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'txnTime' => date('YmdHis')
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->singleQueryUrl,false);
@@ -323,7 +381,6 @@ HTML;
 
 	/**
 	 * 文件传输
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=72
 	 * @param string $settleDate MMDD
 	 * @param string $fileType
 	 * @return mixed
@@ -342,6 +399,7 @@ HTML;
 			'txnTime' => date('YmdHis'),
 			'fileType' => $fileType,
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->fileDownloadUrl,false);
 		return $result;
@@ -349,7 +407,6 @@ HTML;
 
 	/**
 	 * 预授权
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=68
 	 * @param $orderId
 	 * @param $amt
 	 * @param $orderDesc
@@ -375,6 +432,7 @@ HTML;
 			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'预授权');
@@ -383,7 +441,6 @@ HTML;
 
 	/**
 	 * 预授权撤销
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=69
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $txnAmt
@@ -407,6 +464,7 @@ HTML;
 			'txnAmt' => $txnAmt,//交易金额，需和原预授权一致
 			'backUrl' => $this->config['notifyUrl'],
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
@@ -415,7 +473,6 @@ HTML;
 
 	/**
 	 * 预授权完成
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=70
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $amt
@@ -439,6 +496,7 @@ HTML;
 			'txnAmt' => $amt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
@@ -447,7 +505,6 @@ HTML;
 
 	/**
 	 * 预授权完成撤销
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=71
 	 * @param $orderId
 	 * @param $origQryId
 	 * @param $txnAmt
@@ -471,6 +528,7 @@ HTML;
 			'txnAmt' => $txnAmt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
@@ -498,6 +556,7 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'certType' => '01', //原预授权的queryId，可以从查询接口或者通知接口中获取
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);

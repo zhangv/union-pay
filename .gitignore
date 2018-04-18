@@ -2,8 +2,6 @@
 vendor/*
 demo/config-prod.php
 demo/config-prod0.php
-demo/cert/*prod*
-demo/cert/signcert.pfx
-demo/cert0/*prod*
-demo/cert0/signcert.pfx
+cert/prod/*
+cert/signcert.pfx
 sdk

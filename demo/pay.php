@@ -9,8 +9,8 @@ $unionPay = new UnionPay($config,$mode);
 
 $orderId = date('YmdHis');
 $amt = 1;
-$ext['desc'] = 'desc';
-$html = $unionPay->pay($orderId,$amt,$ext);
+
+$html = $unionPay->pay($orderId,$amt);
 echo $html;
 
 /**

@@ -30,6 +30,7 @@ class UnionPayDirect extends UnionPay {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -61,6 +62,7 @@ class UnionPayDirect extends UnionPay {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -71,6 +73,7 @@ class UnionPayDirect extends UnionPay {
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
 		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'开通');
@@ -108,6 +111,7 @@ class UnionPayDirect extends UnionPay {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -141,6 +145,7 @@ class UnionPayDirect extends UnionPay {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -165,7 +170,7 @@ class UnionPayDirect extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'utf-8',
-			'txnType' => '01',
+			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01', //01 - 自助消费  03 - 分期付款
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
@@ -174,6 +179,7 @@ class UnionPayDirect extends UnionPay {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'backUrl' => $this->config['notifyUrl']
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -200,7 +206,7 @@ class UnionPayDirect extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'UTF-8',
-			'txnType' => '01',
+			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '03',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
@@ -208,6 +214,7 @@ class UnionPayDirect extends UnionPay {
 			'currencyCode' => '156',          //交易币种，境内商户勿改
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['backUrl' ] = $this->config['notifyUrl'];
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
@@ -258,6 +265,7 @@ class UnionPayDirect extends UnionPay {
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
 		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
+		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params,'开通并支付');
@@ -277,13 +285,14 @@ class UnionPayDirect extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'utf-8',
-			'txnType' => '31',
+			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => '07',
 			'backUrl' => $this->config['notifyUrl']
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
@@ -308,13 +317,14 @@ class UnionPayDirect extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'utf-8',
-			'txnType' => '04',
+			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => '07',
 			'backUrl' => $this->config['notifyUrl']
 		);
+		$params['certId'] =  $this->getSignCertId();
 		$params['merId' ] =  $this->config['merId'];
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
