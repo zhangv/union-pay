@@ -6,7 +6,7 @@ use \Exception;
  * 银联网关支付
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=1
+ * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
  * */
 class UnionPay {
 	const MODE_TEST = 'test',MODE_PROD = 'prod';
@@ -17,7 +17,9 @@ class UnionPay {
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
 	const BIZTYPE_GATEWAY = '000201', //网关
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
-		BIZTYPE_TOKEN = '000902'; //Token支付（无跳转token版）
+		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
+		BIZTYPE_B2B = '000202',//B2B
+		BIZTYPE_QRCODE = '000000';//二维码支付
 	const ACCESSTYPE_MERCHANT = '0',//商户直连接入
 		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
 		ACCESSTYPE_PLATFORM = '2';//平台商户接入
@@ -78,13 +80,12 @@ HTML;
 
 	/**
 	 * 支付
-	 * https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=63
 	 * @param $orderId
-	 * @param $amt
+	 * @param $txnAmt
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$amt,$ext = []){
+	public function pay($orderId,$txnAmt,$ext = []){
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -99,7 +100,7 @@ HTML;
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $amt ,
+			'txnAmt' => $txnAmt ,
 			'currencyCode' => '156',
 			'defaultPayType' => '0001',	//默认支付方式
 		];
@@ -134,9 +135,9 @@ HTML;
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
-			'bizType' => '000000',
+			'bizType' => UnionPay::BIZTYPE_GATEWAY,
 			'txnTime' => date('YmdHis'),
-			'backUrl' => $this->config['returnUrl'],
+			'backUrl' => $this->config['notifyUrl'],
 			'txnAmt' => $txnAmt,
 			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
 			'txnSubType' => '00',
