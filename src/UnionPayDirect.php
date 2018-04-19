@@ -2,7 +2,7 @@
 namespace zhangv\unionpay;
 
 /**
- * 银联无跳转支付(标准版)
+ * 无跳转支付(标准版)
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
@@ -366,25 +366,6 @@ class UnionPayDirect extends UnionPay {
 	 */
 	public function fileDownload($settleDate,$fileType = '00'){
 		parent::fileDownload($settleDate,$fileType);
-	}
-
-	protected function encryptCustomerInfo($customerInfo) {
-		if($customerInfo == null || count($customerInfo) == 0 )
-			return "";
-		$sensitive = ['phoneNo','cvn2','expired'];//'certifTp' certifId ??
-		$sensitiveInfo = array();
-		foreach ( $customerInfo as $key => $value ) {
-			if (in_array($key,$sensitive) ) {
-				$sensitiveInfo [$key] = $customerInfo [$key];
-				unset ( $customerInfo [$key] );
-			}
-		}
-		if( count ($sensitiveInfo) > 0 ){
-			$sensitiveInfoStr = $this->arrayToString( $sensitiveInfo ,true);
-			$encryptedInfo = $this->encryptData( $sensitiveInfoStr);
-			$customerInfo ['encryptedInfo'] = $encryptedInfo;
-		}
-		return base64_encode ( "{" . $this->arrayToString( $customerInfo ) . "}" );
 	}
 
 }

@@ -3,7 +3,7 @@ namespace zhangv\unionpay;
 
 use \Exception;
 /**
- * 银联网关支付
+ * 网关支付
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
@@ -19,7 +19,9 @@ class UnionPay {
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
 		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
 		BIZTYPE_B2B = '000202',//B2B
+		BIZTYPE_DIRECTDEBIT = '000501',//代收
 		BIZTYPE_QRCODE = '000000';//二维码支付
+
 	const ACCESSTYPE_MERCHANT = '0',//商户直连接入
 		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
 		ACCESSTYPE_PLATFORM = '2';//平台商户接入
@@ -356,13 +358,14 @@ HTML;
 
 	/**
 	 * 交易状态查询
-	 * @param $orderId
+	 * @param string $orderId
+	 * @param string $txnTime
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$ext = []){
+	public function query($orderId,$txnTime,$ext = []){
 		$params = array(
-			'version' => '5.0.0', //only 5.0.0
+			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
 			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnType' => '00',
@@ -371,7 +374,7 @@ HTML;
 			'accessType' => '0',
 			'orderId' => $orderId,
 			'merId' =>  $this->config['merId'],
-			'txnTime' => date('YmdHis')
+			'txnTime' => $txnTime
 		);
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
@@ -892,5 +895,45 @@ HTML;
 			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
 		}
 		return $certs ['pkey'];
+	}
+
+	protected function getCustomerInfo($customerInfo) {
+		if($customerInfo == null || count($customerInfo) == 0 )
+			return "";
+		return base64_encode ( "{" . $this->arrayToString( $customerInfo, false ) . "}" );
+	}
+
+	/**
+	 * Encrypt the customer information
+	 * @param array $customerInfo
+	 * @return string
+	 */
+	protected function encryptCustomerInfo($customerInfo) {
+		if($customerInfo == null || count($customerInfo) == 0 )
+			return "";
+		$sensitive = ['phoneNo','cvn2','expired'];//'certifTp' certifId ??
+		$sensitiveInfo = array();
+		foreach ( $customerInfo as $key => $value ) {
+			if (in_array($key,$sensitive) ) {
+				$sensitiveInfo [$key] = $customerInfo [$key];
+				unset ( $customerInfo [$key] );
+			}
+		}
+		if( count ($sensitiveInfo) > 0 ){
+			$sensitiveInfoStr = $this->arrayToString( $sensitiveInfo ,true);
+			$encryptedInfo = $this->encryptData( $sensitiveInfoStr);
+			$customerInfo ['encryptedInfo'] = $encryptedInfo;
+		}
+		return base64_encode ( "{" . $this->arrayToString( $customerInfo ) . "}" );
+	}
+
+	protected function encodeFileContent($path){
+		$file_content = file_get_contents ( $path );
+		//UTF8 去掉文本中的 bom头
+		$BOM = chr(239).chr(187).chr(191);
+		$file_content = str_replace($BOM,'',$file_content);
+		$file_content_deflate = gzcompress ( $file_content );
+		$file_content_base64 = base64_encode ( $file_content_deflate );
+		return $file_content_base64;
 	}
 }

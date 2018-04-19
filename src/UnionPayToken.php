@@ -2,7 +2,7 @@
 namespace zhangv\unionpay;
 
 /**
- * 银联无跳转支付(Token版)
+ * 无跳转支付(Token版)
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=2

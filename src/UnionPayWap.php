@@ -2,16 +2,12 @@
 namespace zhangv\unionpay;
 
 /**
- * 银联手机网页支付
+ * 手机网页支付
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/detail?id=66
  * */
 class UnionPayWap extends UnionPay {
-
-	public function __construct($config,$mode = UnionPay::MODE_PROD){
-		parent::__construct($config,$mode);
-	}
 
 	/**
 	 * 支付
@@ -39,7 +35,6 @@ class UnionPayWap extends UnionPay {
 		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
 		return $result;
 	}
-
 
 	/**
 	 * 退款
