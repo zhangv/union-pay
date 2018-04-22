@@ -1,7 +1,17 @@
 # union-pay
-simplest union pay(银联支付)，目前支持网关（PC/WAP)、无跳转（标准版/Token版）
+simplest union pay - no dependency to any library, simple enough to let you hack.
+support:
+* [B2C - PC网关支付](src/UnionPay.php)
+* [Wap - WAP/手机网页网关支付](src/UnionPayWap.php)
+* [App - App/控件支付](src/UnionPayApp.php)
+* [B2B - 企业支付](src/UnionPayB2B.php)
+* [Direct - 无跳转标准版](src/UnionPayDirect.php)
+* [Token - 无跳转Token版](src/UnionPayToken.php)
+* [Qrcode - 二维码支付](src/UnionPayQrcode.php)
+* [DirectDebit - 代收](src/UnionPayDirectDebit.php)
+* DirectDeposit - 代付(TODO)
 
-###Step 1: config.php - 配置
+### Step 1: config.php - 配置
 
 ```php
 <?php
@@ -26,7 +36,7 @@ return ['test', [
 ```
 
 
-###Step 2: pay.php - 支付
+### Step 2: pay.php - 支付
 
 ```php
 <?php
@@ -45,7 +55,7 @@ $html = $unionPay->pay($payOrderNo,$sum,$desc,'');
 echo $html;
 ```
 
-###Step 3: payreturn.php - 支付完成前台返回
+### Step 3: payreturn.php - 支付完成前台返回
 
 ```php
 <?php
@@ -63,7 +73,7 @@ $unionPay->onPayNotify($postdata,function($notifydata){
 });
 ```
 
-###Step 4: paynotify.php - 支付完成后台通知
+### Step 4: paynotify.php - 支付完成后台通知
 ```php
 <?php
 require_once __DIR__ . "/../src/UnionPay.php";
