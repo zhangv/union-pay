@@ -1,5 +1,6 @@
 <?php
-namespace zhangv\unionpay;
+namespace zhangv\unionpay\service;
+use zhangv\unionpay\UnionPay;
 
 /**
  * 手机网页支付
@@ -7,7 +8,7 @@ namespace zhangv\unionpay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/detail?id=66
  * */
-class UnionPayWap extends UnionPay {
+class Wap extends UnionPay {
 
 	/**
 	 * 支付

@@ -1,13 +1,10 @@
 <?php
 //前台开通并支付
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/UnionPayDirect.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPay;
-use zhangv\unionPay\UnionPayDirect;
+require_once __DIR__ . "/autoload.php";
+use zhangv\unionpay\UnionPay;
 
 list($mode,$config) = include './config-direct.php';
-$unionPay = new UnionPayDirect($config,$mode);
+$unionPay = UnionPay::Direct($config,$mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 1;

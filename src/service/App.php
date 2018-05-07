@@ -1,17 +1,13 @@
 <?php
-namespace zhangv\unionpay;
-
+namespace zhangv\unionpay\service;
+use zhangv\unionpay\UnionPay;
 /**
  * 银联手机App支付、ApplePay
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=3
  * */
-class UnionPayApp extends UnionPay {
-
-	public function __construct($config,$mode = UnionPay::MODE_PROD){
-		parent::__construct($config,$mode);
-	}
+class App extends UnionPay {
 
 	/**
 	 * 支付

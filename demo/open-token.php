@@ -1,13 +1,11 @@
 <?php
 
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/UnionPayDirect.php";
-require_once __DIR__ . "/../src/UnionPayToken.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPayToken;
+require_once __DIR__ . "/autoload.php";
+use zhangv\unionpay\UnionPay;
+
 
 list($mode,$config) = include './config-direct.php';
-$unionPay = new UnionPayToken($config,$mode);
+$unionPay = UnionPay::DirectToken($config,$mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 2;

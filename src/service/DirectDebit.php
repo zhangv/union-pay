@@ -1,5 +1,6 @@
 <?php
-namespace zhangv\unionpay;
+namespace zhangv\unionpay\service;
+use zhangv\unionpay\UnionPay;
 
 use \Exception;
 /**
@@ -8,7 +9,7 @@ use \Exception;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=68
  * */
-class UnionPayDirectDebit extends UnionPay {
+class DirectDebit extends UnionPay {
 
 	/**
 	 * 前台授权代收协议

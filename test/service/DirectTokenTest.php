@@ -5,17 +5,17 @@
  * Date: 2018/4/10
  * Time: 10:52
  */
-require_once __DIR__ . '/../src/UnionPayToken.php';
-use zhangv\unionpay\UnionPayToken;
+require_once __DIR__ . "/../../demo/autoload.php";
+use zhangv\unionpay\UnionPay;
 use PHPUnit\Framework\TestCase;
 
-class UnionPayTokenTest extends TestCase{
+class DirectTokenTest extends TestCase{
 	/** @var  UnionPayToken */
 	private $unionPay;
 	private $config;
 	public function setUp(){
-		list($mode,$this->config) = include_once __DIR__ .'/../demo/config-direct.php';
-		$this->unionPay = new UnionPayToken($this->config,$mode);
+		list($mode,$this->config) = include __DIR__ .'/../../demo/config-direct.php';
+		$this->unionPay = UnionPay::DirectToken($this->config,$mode);
 	}
 
 	/**

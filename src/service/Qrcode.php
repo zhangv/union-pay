@@ -1,5 +1,6 @@
 <?php
-namespace zhangv\unionpay;
+namespace zhangv\unionpay\service;
+use zhangv\unionpay\UnionPay;
 
 use \Exception;
 
@@ -9,7 +10,7 @@ use \Exception;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=89
  * */
-class UnionPayQrcode extends UnionPay {
+class Qrcode extends UnionPay {
 
 	/**
 	 * 二维码申请

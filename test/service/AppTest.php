@@ -5,16 +5,17 @@
  * Date: 01/02/2018
  * Time: 22:29
  */
-require_once __DIR__ . '/../src/UnionPayApp.php';
-use zhangv\unionpay\UnionPayApp;
+require_once __DIR__ . "/../../demo/autoload.php";
 
-class UnionPayAppTest extends PHPUnit\Framework\TestCase{
+use zhangv\unionpay\UnionPay;
+
+class AppTest extends PHPUnit\Framework\TestCase{
 	/** @var  UnionPayApp */
 	private $unionPay;
 
 	public function setUp(){
-		list($mode,$config) = include_once __DIR__ .'/../demo/config.php';
-		$this->unionPay = new UnionPayApp($config,$mode);
+		list($mode,$config) = include __DIR__ .'/../../demo/config.php';
+		$this->unionPay = UnionPay::App($config,$mode);
 	}
 
 	private static $outTradeNoOffset = 0;

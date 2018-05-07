@@ -3,7 +3,7 @@
  * @license MIT
  * @author zhangv
  */
-namespace zhangv\unionpay;
+namespace zhangv\unionpay\util;
 
 class HttpClient{
 

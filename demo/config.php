@@ -1,7 +1,4 @@
 <?php
-//NOTE: DO NOT put the cert files in a public directory!
-
-//if(file_exists(__DIR__ .'/config-prod.php')) return ['prod',$config = include './config-prod.php'];
 
 return ['test', [
 		'version' => '5.1.0',

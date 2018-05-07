@@ -20,11 +20,11 @@
     "php": ">=7.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "6.0.8"
+    "phpunit/phpunit": "6.5.8"
   },
   "autoload": {
-    "classmap": [
-      "src/"
-    ]
+    "psr-4": {
+      "zhangv\\unionpay\\": "src/"
+    }
   }
 }

@@ -1,11 +1,11 @@
 <?php
 
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPay;
+require_once __DIR__ . "/autoload.php";
+
+use zhangv\unionpay\UnionPay;
 
 list($mode,$config) = include './config.php';
-$unionPay = new UnionPay($config,$mode);
+$unionPay = UnionPay::B2C($config,$mode);
 
 $orderId = date('YmdHis');
 $amt = 1;

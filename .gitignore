@@ -1,7 +1,5 @@
 .idea
 vendor/*
 demo/config-prod.php
-demo/config-prod0.php
 cert/prod/*
-cert/signcert.pfx
 sdk

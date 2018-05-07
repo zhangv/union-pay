@@ -1,5 +1,6 @@
 <?php
-namespace zhangv\unionpay;
+namespace zhangv\unionpay\service;
+use zhangv\unionpay\UnionPay;
 
 /**
  * 代付
@@ -7,6 +8,6 @@ namespace zhangv\unionpay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=67
  * */
-class UnionPayDirectDeposit extends UnionPay {
+class DirectDeposit extends UnionPay {
 
 }
