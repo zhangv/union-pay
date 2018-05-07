@@ -1,15 +1,16 @@
 # union-pay
 simplest union pay - no dependency to any library, simple enough to let you hack.
 support:
-* [B2C - PC网关支付](src/UnionPay.php)
-* [Wap - WAP/手机网页网关支付](src/UnionPayWap.php)
-* [App - App/控件支付](src/UnionPayApp.php)
-* [B2B - 企业支付](src/UnionPayB2B.php)
-* [Direct - 无跳转标准版](src/UnionPayDirect.php)
-* [Token - 无跳转Token版](src/UnionPayToken.php)
-* [Qrcode - 二维码支付](src/UnionPayQrcode.php)
-* [DirectDebit - 代收](src/UnionPayDirectDebit.php)
+* [B2C - PC网关支付](src/service/B2C.php)
+* [Wap - WAP/手机网页网关支付](src/service/Wap.php)
+* [App - App/控件支付](src/service/App.php)
+* [B2B - 企业支付](src/service/B2B.php)
+* [Direct - 无跳转标准版](src/service/Direct.php)
+* [DirectToken - 无跳转Token版](src/service/DirectToken.php)
+* [Qrcode - 二维码支付](src/service/Qrcode.php)
+* [DirectDebit - 代收](src/service/DirectDebit.php)
 * DirectDeposit - 代付(TODO)
+* Bill - 缴费(TODO)
 
 ### Step 1: config.php - 配置
 
@@ -40,12 +41,11 @@ return ['test', [
 
 ```php
 <?php
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPay;
+require_once __DIR__ . "/autoload.php";
+use zhangv\unionpay\UnionPay;
 
 list($mode,$config) = include './config.php';
-$unionPay = new UnionPay($config,$mode);
+$unionPay = UnionPay::B2C($config,$mode);
 
 $payOrderNo = date('YmdHis');
 $sum = 1;
@@ -59,12 +59,11 @@ echo $html;
 
 ```php
 <?php
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPay;
+require_once __DIR__ . "/autoload.php";
+use zhangv\unionpay\UnionPay;
 
 list($mode,$config) = include './config.php';
-$unionPay = new UnionPay($config,$mode);
+$unionPay = UnionPay::B2C($config,$mode);
 
 $postdata = $_REQUEST;
 $unionPay->onPayNotify($postdata,function($notifydata){
@@ -76,11 +75,10 @@ $unionPay->onPayNotify($postdata,function($notifydata){
 ### Step 4: paynotify.php - 支付完成后台通知
 ```php
 <?php
-require_once __DIR__ . "/../src/UnionPay.php";
-require_once __DIR__ . "/../src/HttpClient.php";
-use zhangv\unionPay\UnionPay;
+require_once __DIR__ . "/autoload.php";
+use zhangv\unionpay\UnionPay;
 list($mode,$config) = include './config.php';
-$unionPay = new UnionPay($config,$mode);
+$unionPay = UnionPay::B2C($config,$mode);
 
 $notifyData = $_POST;
 $respCode = $notifyData['respCode'];
@@ -100,7 +98,7 @@ if($respCode == '00'){
 }
 
 
-function demoCallback($notifyData){
+function demoCallback($notifyData){//自定义回调
 	var_dump($notifyData);
 	print('ok');
 }
