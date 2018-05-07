@@ -10,7 +10,7 @@ require_once __DIR__ . "/../../demo/autoload.php";
 use zhangv\unionpay\UnionPay;
 
 class AppTest extends PHPUnit\Framework\TestCase{
-	/** @var  UnionPayApp */
+	/** @var  \zhangv\unionpay\service\App */
 	private $unionPay;
 
 	public function setUp(){

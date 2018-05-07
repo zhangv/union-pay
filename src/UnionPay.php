@@ -19,7 +19,7 @@ use zhangv\unionpay\util\HttpClient;
  * @method static \zhangv\unionpay\service\DirectToken      DirectToken(array $config,string $mode)
  * @method static \zhangv\unionpay\service\Qrcode           Qrcode(array $config,string $mode)
  * @method static \zhangv\unionpay\service\Wap              Wap(array $config,string $mode)
- * @method static \zhangv\unionpay\service\Bill             Bill(array $config,string $mode)
+ * @method static \zhangv\unionpay\service\Charge           Charge(array $config,string $mode)
  */
 
 class UnionPay {
@@ -30,24 +30,32 @@ class UnionPay {
 		TXNTYPE_CONSUMEUNDO = '31',TXNTYPE_PREAUTHUNDO = '32',TXNTYPE_PREAUTHFINISHUNDO = '33',
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
 	const TXNTYPE_APPLYTOKEN = '79',TXNTYPE_DELETETOKEN = '74',TXNTYPE_UPDATETOKEN = '79';
+	const TXNTYPE_PAYBILL = '13',TXNTYPE_QUERYTAX = '73';
 	const BIZTYPE_GATEWAY = '000201', //网关
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
 		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
 		BIZTYPE_B2B = '000202',//B2B
 		BIZTYPE_DIRECTDEBIT = '000501',//代收
+		BIZTYPE_CHARGE = '000601',//缴费产品
 		BIZTYPE_QRCODE = '000000';//二维码支付
 
 	const ACCESSTYPE_MERCHANT = '0',//商户直连接入
 		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
 		ACCESSTYPE_PLATFORM = '2';//平台商户接入
 	const RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
-	public $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
-	public $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";
-	public $batchTransUrl = "https://gateway.95516.com/gateway/api/batchTrans.do";
-	public $singleQueryUrl = "https://gateway.95516.com/gateway/api/queryTrans.do";
-	public $fileDownloadUrl = "https://filedownload.95516.com/";
-	public $cardTransUrl = "https://gateway.95516.com/gateway/api/cardTransReq.do";
-	public $appTransUrl = "https://gateway.95516.com/gateway/api/appTransReq.do";
+	protected $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
+	protected $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";
+	protected $batchTransUrl = "https://gateway.95516.com/gateway/api/batchTrans.do";
+	protected $singleQueryUrl = "https://gateway.95516.com/gateway/api/queryTrans.do";
+	protected $fileDownloadUrl = "https://filedownload.95516.com/";
+	protected $cardTransUrl = "https://gateway.95516.com/gateway/api/cardTransReq.do";
+	protected $appTransUrl = "https://gateway.95516.com/gateway/api/appTransReq.do";
+
+	protected $jfFrontTransUrl = "https://gateway.95516.com/jiaofei/api/frontTransReq.do";
+	protected $jfBackTransUrl = "https://gateway.95516.com/jiaofei/api/backTransReq.do";
+	protected $jfSingleQueryUrl = "https://gateway.95516.com/jiaofei/api/queryTrans.do";
+	protected $jfCardTransUrl = "https://gateway.95516.com/jiaofei/api/cardTransReq.do";
+	protected $jfAppTransUrl = "https://gateway.95516.com/jiaofei/api/appTransReq.do";
 
 	public $response;
 	public $responseArray;
@@ -150,6 +158,10 @@ HTML;
 		}else{
 			throw new \Exception($this->respMsg . ' - request:'.$postbody.', response:'. $this->response);
 		}
+	}
+
+	protected function get($params, $url) {
+		return $this->httpClient->get($url,$params);
 	}
 
 	public function convertQueryStringToArray($str, $urldecode = false){

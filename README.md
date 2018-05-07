@@ -9,8 +9,7 @@ support:
 * [DirectToken - 无跳转Token版](src/service/DirectToken.php)
 * [Qrcode - 二维码支付](src/service/Qrcode.php)
 * [DirectDebit - 代收](src/service/DirectDebit.php)
-* DirectDeposit - 代付(TODO)
-* Bill - 缴费(TODO)
+* [Charge - 缴费产品](src/service/Charge.php)
 
 ### Step 1: config.php - 配置
 
