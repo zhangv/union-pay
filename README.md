@@ -1,7 +1,8 @@
-# union-pay
+# UnionPay - 银联支付
 simplest union pay - no dependency to any library, simple enough to let you hack.
+
 support:
-* [B2C - PC网关支付](src/service/B2C.php)
+* [B2C - Web网关支付](src/service/B2C.php)
 * [Wap - WAP/手机网页网关支付](src/service/Wap.php)
 * [App - App/控件支付](src/service/App.php)
 * [B2B - 企业支付](src/service/B2B.php)

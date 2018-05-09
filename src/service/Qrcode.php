@@ -10,7 +10,7 @@ use \Exception;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=89
  * */
-class Qrcode extends UnionPay {
+class Qrcode extends B2C {
 
 	/**
 	 * 二维码申请

@@ -8,7 +8,7 @@ use zhangv\unionpay\UnionPay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/detail?id=66
  * */
-class Wap extends UnionPay {
+class Wap extends B2C {
 
 	/**
 	 * 支付

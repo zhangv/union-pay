@@ -9,7 +9,7 @@ use \Exception;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=68
  * */
-class DirectDebit extends UnionPay {
+class DirectDebit extends B2C {
 
 	/**
 	 * 前台授权代收协议

@@ -8,7 +8,6 @@ use zhangv\unionpay\UnionPay;
  * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
  * */
 class Direct extends UnionPay {
-	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02',SMSTYPE_PREAUTH = '04',SMSTYPE_OTHER = '05';
 
 	/**
 	 * 后台开通（需要用申请的商户号，并授权后方可测试）

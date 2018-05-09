@@ -57,7 +57,7 @@ class Charge extends UnionPay {
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,$this->jfFrontTransUrl);
+		return $this->createPostForm($params,'银联账单缴费',$this->jfFrontTransUrl);
 	}
 
 	/**
@@ -221,7 +221,7 @@ class Charge extends UnionPay {
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,$this->jfFrontTransUrl);
+		return $this->createPostForm($params,'银联信用卡还款',$this->jfFrontTransUrl);
 	}
 
 	/**
@@ -381,7 +381,7 @@ class Charge extends UnionPay {
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,$this->jfFrontTransUrl);
+		return $this->createPostForm($params,'银联缴税',$this->jfFrontTransUrl);
 	}
 
 	/**
@@ -547,7 +547,7 @@ class Charge extends UnionPay {
 	 * @return mixed
 	 */
 	public function biz($bussCode){
-		$url = "https://gateway.95516.com/jiaofei/config/s/biz//{$bussCode}";
+		$url = "https://gateway.95516.com/jiaofei/config/s/biz/{$bussCode}";
 		return $this->get([],$url);
 	}
 

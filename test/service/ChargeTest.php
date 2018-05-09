@@ -34,7 +34,7 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 			// 'cvn2' => '248',　//cvn2
 			// 'expired' => '1912',　//有效期，YYMM格式，持卡人卡面印的是MMYY的，请注意代码设置倒一下
 		);
-		//todo
+		$this->unionPay->backPayBill();
 
 	}
 
@@ -53,5 +53,18 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 
 	}
 
+	/** @test */
+	public function areas(){
+		$r = $this->unionPay->areas();
+		$r = json_decode($r);
+		$this->assertNotNull($r);
+	}
 
+	/** @test */
+	public function categories(){
+		$r = $this->unionPay->categories(null);
+		var_dump($r);
+		$r = json_decode($r);
+		$this->assertNotNull($r);
+	}
 }

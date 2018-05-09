@@ -5,10 +5,9 @@ use \Exception;
 use zhangv\unionpay\util\HttpClient;
 
 /**
- * 网关支付
+ * 银联支付
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
  *
  * @method static \zhangv\unionpay\service\App              App(array $config,string $mode)
  * @method static \zhangv\unionpay\service\B2B              B2B(array $config,string $mode)
@@ -26,12 +25,14 @@ class UnionPay {
 	const MODE_TEST = 'test',MODE_PROD = 'prod';
 	const SIGNMETHOD_RSA = '01',SIGNMETHOD_SHA256 = '11',SIGNMETHOD_SM3 = '12';
 	const CHANNELTYPE_PC = '07', CHANNELTYPE_MOBILE = '08';
-	const TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',TXNTYPE_REFUND = '04',
+	const
+		TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',TXNTYPE_REFUND = '04',
 		TXNTYPE_CONSUMEUNDO = '31',TXNTYPE_PREAUTHUNDO = '32',TXNTYPE_PREAUTHFINISHUNDO = '33',
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
 	const TXNTYPE_APPLYTOKEN = '79',TXNTYPE_DELETETOKEN = '74',TXNTYPE_UPDATETOKEN = '79';
 	const TXNTYPE_PAYBILL = '13',TXNTYPE_QUERYTAX = '73';
-	const BIZTYPE_GATEWAY = '000201', //网关
+	const
+		BIZTYPE_B2C = '000201', //网关
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
 		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
 		BIZTYPE_B2B = '000202',//B2B
@@ -39,10 +40,13 @@ class UnionPay {
 		BIZTYPE_CHARGE = '000601',//缴费产品
 		BIZTYPE_QRCODE = '000000';//二维码支付
 
-	const ACCESSTYPE_MERCHANT = '0',//商户直连接入
+	const
+		ACCESSTYPE_MERCHANT = '0',//商户直连接入
 		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
 		ACCESSTYPE_PLATFORM = '2';//平台商户接入
 	const RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
+	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02',SMSTYPE_PREAUTH = '04',SMSTYPE_OTHER = '05';
+
 	protected $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
 	protected $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";
 	protected $batchTransUrl = "https://gateway.95516.com/gateway/api/batchTrans.do";
@@ -107,7 +111,7 @@ HTML;
 	}
 
 	public static function load($name,$config,$mode = self::MODE_PROD){
-		$service = "zhangv\unionpay\service\\{$name}";
+		$service = __NAMESPACE__ . "\\service\\{$name}";
 		return new $service($config,$mode);
 	}
 
@@ -282,15 +286,17 @@ HTML;
 	 * 构建自动提交HTML表单
 	 * @param $params
 	 * @param $title
+	 * @param $url
 	 * @return string
 	 */
-	protected function createPostForm($params,$title = '支付'){
+	protected function createPostForm($params,$title = '支付',$url = null){
 		$input = '';
 		foreach($params as $key => $item) {
 			if(trim($item)=='') continue;
 			$input .= "\t\t<input type=\"hidden\" name=\"{$key}\" value=\"{$item}\">\n";
 		}
-		return sprintf($this->formTemplate, $title,$this->frontTransUrl, $input);
+		if(!$url) $url = $this->frontTransUrl;
+		return sprintf($this->formTemplate, $title,$url, $input);
 	}
 
 	/**
