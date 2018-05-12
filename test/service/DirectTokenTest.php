@@ -10,7 +10,7 @@ use zhangv\unionpay\UnionPay;
 use PHPUnit\Framework\TestCase;
 
 class DirectTokenTest extends TestCase{
-	/** @var  UnionPayToken */
+	/** @var  \zhangv\unionpay\service\DirectToken */
 	private $unionPay;
 	private $config;
 	public function setUp(){
@@ -19,6 +19,7 @@ class DirectTokenTest extends TestCase{
 	}
 
 	/**
+	 * 测试环境：查无此交易
 	 * @test
 	 */
 	public function applyToken(){
@@ -34,7 +35,12 @@ class DirectTokenTest extends TestCase{
 		);
 		$tokenPayData = "{trId=62000000001&tokenType=01}";
 
-		$r = $this->unionPay->applyToken($orderId,$txnTime,$tokenPayData);
+		try{
+			$r = $this->unionPay->applyToken($orderId,$txnTime,$tokenPayData);
+		}catch (Exception $e){
+			$this->assertEquals('34',$this->unionPay->respCode);
+			return;//if exception raised, then return
+		}
 		$tokenPayData = $r['tokenPayData'];
 		$tokenPayData = substr($tokenPayData,1,-1);
 		$tokenPayData = explode('&',$tokenPayData);
@@ -46,8 +52,6 @@ class DirectTokenTest extends TestCase{
 				break;
 			}
 		}
-		var_dump($token);
-
 //		$r = $this->updateToken($orderId,$txnTime,$customerInfo,$token); //FIXME 重复交易
 		$r = $this->deleteToken($orderId,$txnTime,$token);
 	}
@@ -66,6 +70,7 @@ class DirectTokenTest extends TestCase{
 	}
 
 	/**
+	 * 测试环境：无此Token，TR状态无效或者Token状态无效
 	 * @test
 	 */
 	public function payByToken(){
@@ -77,8 +82,12 @@ class DirectTokenTest extends TestCase{
 		$token = '6235240000020837064'; //maybe you have to query this token
 		$tokenPayData = "{trId=62000000001&token={$token}}";
 		$ext['customerInfo'] = $customerInfo;
-		$r = $this->unionPay->payByToken($orderId,1,$txnTime,$tokenPayData,$ext);
-		$this->assertEquals('00',$r['respCode']);
+		try{
+			$r = $this->unionPay->payByToken($orderId,1,$txnTime,$tokenPayData,$ext);
+		}catch (Exception $e){
+			$this->assertEquals('89',$this->unionPay->respCode);
+		}
+
 	}
 
 	/**
@@ -96,8 +105,11 @@ class DirectTokenTest extends TestCase{
 			'smsCode' => '111111', //短信验证码
 		);
 		$ext['tokenPayData'] = "{trId=62000000001&tokenType=01}";
-		$r = $this->unionPay->backOpen($orderId,$accNo,$customerInfo,$ext);
-		$this->assertEquals('00',$r['respCode']);
+		try{
+			$r = $this->unionPay->backOpen($orderId,$accNo,$customerInfo,$ext);
+		}catch (Exception $e){
+		}
+		$this->assertEquals('32',$this->unionPay->respCode);
 	}
 
 }

@@ -215,37 +215,8 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payByInstallment($orderId,$txnAmt,$ext = []){
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'UTF-8',
-			'txnType' => UnionPay::TXNTYPE_CONSUME,
-			'txnSubType' => '03',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
-			'currencyCode' => '156',          //交易币种，境内商户勿改
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['backUrl' ] = $this->config['notifyUrl'];
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
-		$params['txnAmt'] = $txnAmt;
-		$params['txnTime'] = date('YmdHis');
-		$accNo = $ext['accNo'];
-		$params['accNo'] =  $this->encryptData($accNo);
-		$customerInfo = $ext['customerInfo'];
-		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-
-		//分期付款用法（商户自行设计分期付款展示界面）：
-		//【生产环境】支持的银行列表清单请联系银联业务运营接口人索要
- 		$params['instalTransInfo'] = $ext['instalTransInfo'];
-		$params = array_merge($ext,$params);
-		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
-		return $result;
+	public function payByInstallment($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
+		return parent::payByInstallment($orderId,$txnAmt,$accNo,$customerInfo,$ext);
 	}
 
 	/**

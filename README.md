@@ -1,6 +1,7 @@
 # UnionPay - 银联支付
 simplest union pay - no dependency to any library, simple enough to let you hack.
 
+
 support:
 * [B2C - Web网关支付](src/service/B2C.php)
 * [Wap - WAP/手机网页网关支付](src/service/Wap.php)
@@ -11,6 +12,20 @@ support:
 * [Qrcode - 二维码支付](src/service/Qrcode.php)
 * [DirectDebit - 代收](src/service/DirectDebit.php)
 * [Charge - 缴费产品](src/service/Charge.php)
+
+### Install
+```
+composer require zhangv/union-pay
+```
+or
+
+add:
+
+```
+"zhangv/union-pay":"0.8"
+```
+in composer.json
+
 
 ### Step 1: config.php - 配置
 

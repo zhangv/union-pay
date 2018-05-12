@@ -132,7 +132,7 @@ class Direct extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function sms($orderId,$accNo,$customerInfo,$smsType = UnionPayDirect::SMSTYPE_OPEN,$ext = []):array{
+	public function sms($orderId,$accNo,$customerInfo,$smsType = Direct::SMSTYPE_OPEN,$ext = []):array{
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -161,10 +161,12 @@ class Direct extends UnionPay {
 	 * 支付
 	 * @param $orderId
 	 * @param $txnAmt
+	 * @param $accNo
+	 * @param $customerInfo
 	 * @param array $ext
 	 * @return array
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -183,9 +185,7 @@ class Direct extends UnionPay {
 		$params['orderId'] =  $orderId;
 		$params['txnTime'] = date('YmdHis');
 		$params['txnAmt'] = $txnAmt;
-		$accNo = $ext['accNo'];
 		$params['accNo'] = $this->encryptData($accNo);
-		$customerInfo = $ext['customerInfo'];
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
@@ -197,10 +197,12 @@ class Direct extends UnionPay {
 	 * 分期付款
 	 * @param $orderId
 	 * @param $txnAmt
+	 * @param $accNo
+	 * @param $customerInfo
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payByInstallment($orderId,$txnAmt,$ext = []){
+	public function payByInstallment($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -219,9 +221,7 @@ class Direct extends UnionPay {
 		$params['orderId'] =  $orderId;
 		$params['txnAmt'] = $txnAmt;
 		$params['txnTime'] = date('YmdHis');
-		$accNo = $ext['accNo'];
 		$params['accNo'] =  $this->encryptData($accNo);
-		$customerInfo = $ext['customerInfo'];
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
 
 		//分期付款用法（商户自行设计分期付款展示界面）：

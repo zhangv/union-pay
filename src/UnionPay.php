@@ -44,7 +44,8 @@ class UnionPay {
 		ACCESSTYPE_MERCHANT = '0',//商户直连接入
 		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
 		ACCESSTYPE_PLATFORM = '2';//平台商户接入
-	const RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
+	const
+		RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
 	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02',SMSTYPE_PREAUTH = '04',SMSTYPE_OTHER = '05';
 
 	protected $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
@@ -110,14 +111,18 @@ HTML;
 		}
 	}
 
-	public static function load($name,$config,$mode = self::MODE_PROD){
+	/**
+	 * @param $name
+	 * @param $config
+	 * @param string $mode
+	 * @return mixed
+	 */
+	private static function load($name,$config,$mode = self::MODE_PROD){
 		$service = __NAMESPACE__ . "\\service\\{$name}";
 		return new $service($config,$mode);
 	}
 
 	/**
-	 * Dynamically pass methods to the application.
-	 *
 	 * @param string $name
 	 * @param array  $arguments
 	 *

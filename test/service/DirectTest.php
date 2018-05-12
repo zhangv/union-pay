@@ -10,7 +10,7 @@ use zhangv\unionpay\UnionPay;
 use PHPUnit\Framework\TestCase;
 
 class DirectTest extends TestCase{
-	/** @var  UnionPayDirect */
+	/** @var  \zhangv\unionpay\service\Direct */
 	private $unionPay;
 	private $config;
 	public function setUp(){
@@ -67,11 +67,9 @@ class DirectTest extends TestCase{
 		$orderId = date('YmdHis');
 		$testAcc = $this->config['testAcc'][2];
 		$accNo = $testAcc['accNo'];
-		$ext = [
-			'accNo' => $accNo,
-			'customerInfo' => ['smsCode' => '111111']
-		];
-		$r = $this->unionPay->pay($orderId,1000,'','',$ext);
+		$ext = [];
+		$customeerInfo =  ['smsCode' => '111111'];
+		$r = $this->unionPay->pay($orderId,1000,$accNo,$customeerInfo,$ext);
 		$this->assertEquals('00',$r['respCode']);
 	}
 
@@ -84,12 +82,12 @@ class DirectTest extends TestCase{
 	public function payByInstallment(){
 		$orderId = date('YmdHis');
 		$testAcc = $this->config['testAcc'][1];
+		$accNo = $testAcc['accNo'];
+		$customerInfo = ['smsCode' => '111111'];
 		$ext = [
-			'accNo' => $testAcc['accNo'],
-			'customerInfo' => ['smsCode' => '111111'],
 			'instalTransInfo' => $testAcc['instalTransInfo']
 		];
-		$this->unionPay->payByInstallment($orderId,100,'','',$ext);
+		$this->unionPay->payByInstallment($orderId,100,$accNo,$customerInfo,$ext);
 	}
 
 }
