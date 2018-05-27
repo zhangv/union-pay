@@ -7,7 +7,7 @@ use zhangv\unionpay\UnionPay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=3
  * */
-class App extends UnionPay {
+class App extends B2C {
 
 	/**
 	 * 支付

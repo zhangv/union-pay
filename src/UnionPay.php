@@ -9,16 +9,16 @@ use zhangv\unionpay\util\HttpClient;
  * @license MIT
  * @author zhangv
  *
- * @method static \zhangv\unionpay\service\App              App(array $config,string $mode)
- * @method static \zhangv\unionpay\service\B2B              B2B(array $config,string $mode)
- * @method static \zhangv\unionpay\service\B2C              B2C(array $config,string $mode)
- * @method static \zhangv\unionpay\service\Direct           Direct(array $config,string $mode)
- * @method static \zhangv\unionpay\service\DirectDebit      DirectDebit(array $config,string $mode)
- * @method static \zhangv\unionpay\service\DirectDeposit    DirectDeposit(array $config,string $mode)
- * @method static \zhangv\unionpay\service\DirectToken      DirectToken(array $config,string $mode)
- * @method static \zhangv\unionpay\service\Qrcode           Qrcode(array $config,string $mode)
- * @method static \zhangv\unionpay\service\Wap              Wap(array $config,string $mode)
- * @method static \zhangv\unionpay\service\Charge           Charge(array $config,string $mode)
+ * @method static service\App              App(array $config,string $mode)
+ * @method static service\B2B              B2B(array $config,string $mode)
+ * @method static service\B2C              B2C(array $config,string $mode)
+ * @method static service\Direct           Direct(array $config,string $mode)
+ * @method static service\DirectDebit      DirectDebit(array $config,string $mode)
+ * @method static service\DirectDeposit    DirectDeposit(array $config,string $mode)
+ * @method static service\DirectToken      DirectToken(array $config,string $mode)
+ * @method static service\Qrcode           Qrcode(array $config,string $mode)
+ * @method static service\Wap              Wap(array $config,string $mode)
+ * @method static service\Charge           Charge(array $config,string $mode)
  */
 
 class UnionPay {
@@ -26,10 +26,15 @@ class UnionPay {
 	const SIGNMETHOD_RSA = '01',SIGNMETHOD_SHA256 = '11',SIGNMETHOD_SM3 = '12';
 	const CHANNELTYPE_PC = '07', CHANNELTYPE_MOBILE = '08';
 	const
-		TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',TXNTYPE_REFUND = '04',
+		TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',
+		TXNTYPE_REFUND = '04',TXNTYPE_QUERY = '00',
 		TXNTYPE_CONSUMEUNDO = '31',TXNTYPE_PREAUTHUNDO = '32',TXNTYPE_PREAUTHFINISHUNDO = '33',
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
-	const TXNTYPE_APPLYTOKEN = '79',TXNTYPE_DELETETOKEN = '74',TXNTYPE_UPDATETOKEN = '79';
+	const TXNTYPE_DIRECTOPEN = '79', TXNTYPE_QUERYOPEN = '78',TXNTYPE_APPLYTOKEN = '79',
+		TXNTYPE_DELETETOKEN = '74',TXNTYPE_UPDATETOKEN = '79';
+	const TXNTYPE_AUTHORIZE = '72',TXNTYPE_UNAUTHORIZE = '74',TXNTYPE_QUERYBIND = '75',
+		TXNTYPE_DIRECTDEBIT = '11',TXNTYPE_AUTHENTICATE = '77',TXNTYPE_BATCHDEBIT = '21',
+		TXNTYPE_QUERYBATCHDEBIT = '22';
 	const TXNTYPE_PAYBILL = '13',TXNTYPE_QUERYTAX = '73';
 	const
 		BIZTYPE_B2C = '000201', //网关
@@ -47,6 +52,53 @@ class UnionPay {
 	const
 		RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
 	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02',SMSTYPE_PREAUTH = '04',SMSTYPE_OTHER = '05';
+
+	protected $txnmap = [ //This fucking map is killing me.
+		self::BIZTYPE_DIRECTDEBIT =>[
+			self::TXNTYPE_AUTHORIZE => ['11','01','10'],
+			self::TXNTYPE_UNAUTHORIZE => ['04','00'],
+			self::TXNTYPE_DIRECTDEBIT => ['00'],
+			self::TXNTYPE_CONSUMEUNDO => ['00'],
+			self::TXNTYPE_REFUND => ['00'],
+			self::TXNTYPE_QUERYBIND => ['00'],
+			self::TXNTYPE_AUTHENTICATE => ['01'],
+			self::TXNTYPE_BATCHDEBIT => ['02'],
+			self::TXNTYPE_QUERYBATCHDEBIT=> ['02']
+		],
+		self::BIZTYPE_B2C => [
+			self::TXNTYPE_CONSUME => ['01'],
+			self::TXNTYPE_CONSUMEUNDO => ['00'],
+			self::TXNTYPE_REFUND => ['00'],
+			self::TXNTYPE_QUERY => ['00'],
+			self::TXNTYPE_FILEDOWNLOAD => ['01'],
+			self::TXNTYPE_PREAUTH => ['01'],
+			self::TXNTYPE_PREAUTHUNDO => ['00'],
+			self::TXNTYPE_PREAUTHFINISH => ['00'],
+			self::TXNTYPE_PREAUTHFINISHUNDO => ['00'],
+			self::TXNTYPE_UPDATEPUBLICKEY => ['00']
+		],
+		self::BIZTYPE_DIRECT => [
+			self::TXNTYPE_DIRECTOPEN => ['00'],
+			self::TXNTYPE_QUERYOPEN => ['00'],
+			self::TXNTYPE_CONSUME => ['01','03'],
+			self::TXNTYPE_AUTHENTICATE => ['00','02','04','05'],//sms
+			self::TXNTYPE_CONSUMEUNDO => ['00'],
+			self::TXNTYPE_REFUND => ['00'],
+		],
+		self::BIZTYPE_TOKEN => [ //extends Direct
+			self::TXNTYPE_APPLYTOKEN => ['05','03'],
+			self::TXNTYPE_DELETETOKEN => ['01'],
+		],
+		self::BIZTYPE_QRCODE => [ //extends B2C
+			self::TXNTYPE_CONSUME => ['06'],
+		],
+		self::BIZTYPE_CHARGE => [
+			self::TXNTYPE_PAYBILL => [
+				'01',//bill
+				'02' //tax
+			]
+		]
+	];
 
 	protected $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
 	protected $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";

@@ -360,7 +360,7 @@ class B2C extends UnionPay{
 			'channelType' => '07',
 			'orderId' => $orderId,
 			'merId' =>  $this->config['merId'],
-			'certType' => '01', //原预授权的queryId，可以从查询接口或者通知接口中获取
+			'certType' => '01',
 		);
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);

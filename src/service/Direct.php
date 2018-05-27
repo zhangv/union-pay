@@ -22,7 +22,7 @@ class Direct extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'UTF-8',
-			'txnType' => '79',
+			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
@@ -54,11 +54,11 @@ class Direct extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'utf-8',
-			'txnType' => '79',
+			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
 		$params['certId'] =  $this->getSignCertId();
@@ -103,11 +103,11 @@ class Direct extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'UTF-8',
-			'txnType' => '78',
+			'txnType' => UnionPay::TXNTYPE_QUERYOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
 		$params['certId'] =  $this->getSignCertId();
@@ -141,7 +141,7 @@ class Direct extends UnionPay {
 			'txnSubType' => $smsType,
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
 		$params['certId'] =  $this->getSignCertId();
@@ -175,7 +175,7 @@ class Direct extends UnionPay {
 			'txnSubType' => '01', //01 - 自助消费  03 - 分期付款
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => '156',          //交易币种，境内商户勿改
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'backUrl' => $this->config['notifyUrl']
@@ -211,7 +211,7 @@ class Direct extends UnionPay {
 			'txnSubType' => '03',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => '156',          //交易币种，境内商户勿改
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
@@ -246,11 +246,11 @@ class Direct extends UnionPay {
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
 			'encoding' => 'utf-8',
-			'txnType' => '01',
+			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'currencyCode' => '156',
 		);
@@ -288,7 +288,7 @@ class Direct extends UnionPay {
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'backUrl' => $this->config['notifyUrl']
 		);
 		$params['certId'] =  $this->getSignCertId();
@@ -320,7 +320,7 @@ class Direct extends UnionPay {
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'backUrl' => $this->config['notifyUrl']
 		);
 		$params['certId'] =  $this->getSignCertId();

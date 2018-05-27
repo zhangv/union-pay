@@ -1,16 +1,16 @@
 <?php
 
-require_once __DIR__ . "/autoload.php";
+require_once __DIR__ . "/../autoload.php";
+
 use zhangv\unionpay\UnionPay;
 
-list($mode,$config) = include './config.php';
-$unionPay = new UnionPay($config,$mode);
+list($mode,$config) = include '../config.php';
+$unionPay = UnionPay::B2C($config,$mode);
 
-$payOrderNo = date('YmdHis');
+$orderId = date('YmdHis');
 $amt = 1;
-$desc = 'desc';
 
-$html = $unionPay->preAuth($payOrderNo,$amt,$desc);
+$html = $unionPay->pay($orderId,$amt);
 echo $html;
 
 /**

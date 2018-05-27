@@ -1,14 +1,13 @@
 <?php
-
-require_once __DIR__ . "/autoload.php";
+//前台开通并支付
+require_once __DIR__ . "/../autoload.php";
 use zhangv\unionpay\UnionPay;
 
-
-list($mode,$config) = include './config-direct.php';
-$unionPay = UnionPay::DirectToken($config,$mode);
+list($mode,$config) = include '../config-direct.php';
+$unionPay = UnionPay::Direct($config,$mode);
 
 $payOrderNo = date('YmdHis');
-$amt = 2;
+$amt = 1;
 $desc = 'desc';
 $testAcc = $config['testAcc'][3];
 $accNo = $testAcc['accNo'];
@@ -19,6 +18,6 @@ $customerInfo = [
 	'certifId' => $testAcc['certifId'], //证件号，15位身份证不校验尾号，18位会校验尾号，请务必在前端写好校验代码
 	'customerNm' => $testAcc['customerNm'], //姓名
 ];
-$ext = ['tokenPayData' => "{trId=62000000001&tokenType=01}"];
-$form = $unionPay->frontOpen($payOrderNo,$accNo,$customerInfo,$ext);
+
+$form = $unionPay->frontOpenPay($payOrderNo,1,$accNo,$customerInfo);
 echo $form;
