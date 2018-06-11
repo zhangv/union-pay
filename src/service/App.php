@@ -74,8 +74,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$ext = []){
-		return parent::query($orderId,$ext);
+	public function query($orderId,$txnTime,$ext = []){
+		return parent::query($orderId,$txnTime,$ext);
 	}
 
 	/**

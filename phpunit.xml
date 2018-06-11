@@ -6,8 +6,8 @@
          verbose="true">
 
 	<testsuites>
-		<testsuite name="ProjectName">
-			<directory suffix="Test.php">test/</directory>
+		<testsuite name="all">
+			<directory suffix="AllTests.php">test/</directory>
 		</testsuite>
 	</testsuites>
 

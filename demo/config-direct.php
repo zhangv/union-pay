@@ -11,9 +11,9 @@ return ['test',
 		'encoding' => 'UTF-8',
 		'merId' => '777290058158470', //注意这个测试商户号
 		'returnUrl' => 'http://dev.git.com/union-pay/demo/payreturn.php', //前台网关支付返回
-		'notifyUrl' => 'http://dev.git.com/demo/paynotify.php', //后台通知
+		'notifyUrl' => 'http://dev.git.com/union-pay/demo/paynotify.php', //后台通知
 		'frontFailUrl'   => 'http://dev.git.com/union-pay/demo/payfail.php',
-		'refundnotifyUrl' => 'http://dev.git.com.com/demo/refundnotify.php',
+		'refundnotifyUrl' => 'http://dev.git.com.com/union-pay/demo/refundnotify.php',
 		'signCertPath' => dirname(__FILE__).'/../cert/acp_test_sign.pfx',
 		'signCertPwd' => '000000', //签名证书密码
 		'verifyCertPath' => dirname(__FILE__).'/../cert/acp_test_verify_sign.cer',  //v5.0.0 required NOTE:该测试环境证书已失效，推荐使用5.1.0
