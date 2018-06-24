@@ -283,11 +283,12 @@ class DirectToken extends Direct {
 	/**
 	 * 交易状态查询
 	 * @param $orderId
+	 * @param $txnTime
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$ext = []){
-		return parent::query($orderId,$ext);
+	public function query($orderId, $txnTime, $ext = []){
+		return parent::query($orderId, $txnTime, $ext);
 	}
 
 	/**

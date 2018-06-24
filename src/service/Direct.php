@@ -7,7 +7,7 @@ use zhangv\unionpay\UnionPay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
  * */
-class Direct extends B2C {
+class Direct extends UnionPay {
 
 	/**
 	 * 后台开通（需要用申请的商户号，并授权后方可测试）

@@ -730,4 +730,86 @@ HTML;
 			throw new \Exception('Invalid paid notify data');
 		}
 	}
+
+	/**
+	 * 加密公钥更新查询
+	 * @param $orderId
+	 * @param array $ext
+	 * @return mixed
+	 */
+	public function updatePublicKey($orderId,$ext = []){
+		$params = array(
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
+			'bizType' => '000000',
+			'txnTime' => date('YmdHis'),
+			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+			'txnType' => UnionPay::TXNTYPE_UPDATEPUBLICKEY,
+			'txnSubType' => '00',
+			'accessType' => '0',
+			'channelType' => '07',
+			'orderId' => $orderId,
+			'merId' =>  $this->config['merId'],
+			'certType' => '01',
+		);
+		$params['certId'] =  $this->getSignCertId();
+		$params = array_merge($params,$ext);
+		$params['signature'] = $this->sign($params);
+		$result = $this->post($params,$this->backTransUrl);
+		return $result;
+	}
+
+	/**
+	 * 交易状态查询
+	 * @param string $orderId
+	 * @param string $txnTime
+	 * @param array $ext
+	 * @return mixed
+	 */
+	public function query($orderId,$txnTime,$ext = []){
+		$params = array(
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
+			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+			'txnType' => '00',
+			'txnSubType' => '00',
+			'bizType' => '000000',
+			'accessType' => '0',
+			'orderId' => $orderId,
+			'merId' =>  $this->config['merId'],
+			'txnTime' => $txnTime
+		);
+		$params['certId'] =  $this->getSignCertId();
+		$params = array_merge($params,$ext);
+		$params['signature'] = $this->sign($params);
+		$result = $this->post($params,$this->singleQueryUrl,false);
+		return $result;
+	}
+
+	/**
+	 * 文件传输
+	 * @param string $settleDate MMDD
+	 * @param string $fileType
+	 * @return mixed
+	 */
+	public function fileDownload($settleDate,$fileType = '00'){
+		$params = array(
+			'version' => $this->config['version'],
+			'encoding' => $this->config['encoding'],
+			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
+			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+			'txnSubType' => '01',
+			'bizType' => '000000',
+			'accessType' => '0',
+			'merId' =>  $this->config['merId'],
+			'settleDate' => $settleDate,//'0119', MMDD
+			'txnTime' => date('YmdHis'),
+			'fileType' => $fileType,
+		);
+		$params['certId'] =  $this->getSignCertId();
+		$params['signature'] = $this->sign($params);
+		$result = $this->post($params,$this->fileDownloadUrl,false);
+		return $result;
+	}
+
 }
