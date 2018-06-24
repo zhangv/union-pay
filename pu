@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+$root = '.';
+
+$command = "{$root}/vendor/bin/phpunit --printer=Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer --bootstrap {$root}/vendor/autoload.php {$root}/test/AllTests.php";
+echo $command;
+
+if( ($fp = popen($command, "r")) ) {
+	while( !feof($fp) ){
+		echo fread($fp, 1024);
+		flush(); // you have to flush buffer
+	}
+	fclose($fp);
+}

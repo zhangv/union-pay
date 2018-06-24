@@ -5,23 +5,16 @@ class AllTests extends TestSuite {
 
 	public static function suite() {
 		$suite = new TestSuite();
-		$tests = ['UnionPayTest','service'];
+		$tests = ['UnionPayTest','service','util'];
 		foreach($tests as $t){
 			$path = __DIR__ . '/'.$t;
 			if(is_dir($path)){
 				self::addDir($path,$suite);
 			}else{
-				self::addFile("{$path}.php",$suite);
+				$suite->addTestFile("{$path}.php");
 			}
 		}
 		return $suite;
-	}
-
-	private static function addFile($path,&$suite){
-		require_once($path);
-		$clz = substr($path,(strrpos($path,'/')===false)?0:strrpos($path,'/')+1);
-		$clz = str_replace('.php','',$clz);
-		$suite->addTestSuite($clz );
 	}
 
 	private static function addDir($dir,&$suite){
@@ -32,7 +25,7 @@ class AllTests extends TestSuite {
 				if(is_dir($path)){
 					self::addDir($path,$suite);
 				}else{
-					self::addFile($path,$suite);
+					$suite->addTestFile($path);
 				}
 			}
 			closedir($dh);

@@ -14,7 +14,6 @@ use zhangv\unionpay\util\HttpClient;
  * @method static service\B2C              B2C(array $config,string $mode)
  * @method static service\Direct           Direct(array $config,string $mode)
  * @method static service\DirectDebit      DirectDebit(array $config,string $mode)
- * @method static service\DirectDeposit    DirectDeposit(array $config,string $mode)
  * @method static service\DirectToken      DirectToken(array $config,string $mode)
  * @method static service\Qrcode           Qrcode(array $config,string $mode)
  * @method static service\Wap              Wap(array $config,string $mode)
@@ -184,8 +183,11 @@ HTML;
 		return self::load($name, ...$arguments);
 	}
 
+	public function setHttpClient($httpClient){
+		$this->httpClient = $httpClient;
+	}
+
 	/**
-	 * 后台交易 HttpClient通信
 	 * @param array $params
 	 * @param string $url
 	 * @param bool $validateResp
