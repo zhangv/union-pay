@@ -7,7 +7,7 @@ use zhangv\unionpay\UnionPay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
  * */
-class Direct extends UnionPay {
+class Direct extends B2C {
 
 	/**
 	 * 后台开通（需要用申请的商户号，并授权后方可测试）
@@ -349,11 +349,12 @@ class Direct extends UnionPay {
 	 * 交易状态查询
 	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=1&apiId=66
 	 * @param $orderId
+	 * @param $txnTime
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$ext = []){
-		return parent::query($orderId,$ext);
+	public function query($orderId,$txnTime,$ext = []){
+		return parent::query($orderId,$txnTime,$ext);
 	}
 
 	/**

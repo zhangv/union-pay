@@ -4,7 +4,7 @@ require_once __DIR__ . "/../autoload.php";
 use zhangv\unionpay\UnionPay;
 
 list($mode,$config) = include '../config.php';
-$unionPay = new UnionPay($config,$mode);
+$unionPay = UnionPay::B2C($config,$mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 1;

@@ -25,6 +25,5 @@ if($respCode == '00'){
 
 
 function demoCallback($notifyData){
-	var_dump($notifyData);
-	print('ok');
+	print_r($notifyData);
 }

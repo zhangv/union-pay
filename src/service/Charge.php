@@ -551,19 +551,4 @@ class Charge extends UnionPay {
 		return $this->get([],$url);
 	}
 
-	/**
-	 * 对控件支付成功返回的结果信息中data域进行验签
-	 * @param string $jsonData json格式数据
-	 * @return bool 是否成功
-	 */
-	public function verifyAppResponse($jsonData) {
-		$data = json_decode($jsonData);
-		$sign = $data->sign;
-		$data = $data->data;
-		$public_key = openssl_x509_read(file_get_contents($this->config['verifyCertPath']));
-		$signature = base64_decode ( $sign );
-		$params_sha1x16 = sha1 ( $data, FALSE );
-		$isSuccess = openssl_verify ( $params_sha1x16, $signature,$public_key, OPENSSL_ALGO_SHA1 );
-		return $isSuccess;
-	}
 }

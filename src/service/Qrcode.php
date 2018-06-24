@@ -92,13 +92,14 @@ class Qrcode extends B2C {
 	/**
 	 * 交易状态查询
 	 * @param $orderId
+	 * @param $txnTime
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$ext = []){
+	public function query($orderId,$txnTime,$ext = []){
 		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		return parent::query($orderId,$ext);
+		return parent::query($orderId,$txnTime,$ext);
 	}
 
 	/**
@@ -108,7 +109,6 @@ class Qrcode extends B2C {
 	 * @return mixed
 	 */
 	public function fileDownload($settleDate,$fileType = '00'){
-		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		return parent::fileDownload($settleDate,$fileType);
 	}
 

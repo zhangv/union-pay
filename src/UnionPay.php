@@ -213,7 +213,7 @@ HTML;
 		$this->respCode = $this->responseArray['respCode'];
 		$this->respMsg = $this->responseArray['respMsg'];
 		if($this->respCode == UnionPay::RESPCODE_SUCCESS){
-			if($validateResp == true && !$this->validateSign($this->responseArray)){
+			if($validateResp === true && !$this->validateSign($this->responseArray)){
 				throw new \Exception("Signature verification failed, response: {$this->response}");
 			}else {
 				return $this->responseArray;
@@ -231,7 +231,6 @@ HTML;
 		$result = array();
 		$len = strlen($str);
 		$temp = "";
-		$curChar = "";
 		$key = "";
 		$isKey = true;
 		$isOpen = false;
@@ -292,7 +291,7 @@ HTML;
 	 * @param array $params
 	 * @return string
 	 */
-	function getRequestParamString($params) {
+	protected function getRequestParamString($params) {
 		$params_str = '';
 		foreach ( $params as $key => $value ) {
 			if(trim($value)=='') continue;
@@ -363,7 +362,7 @@ HTML;
 	 * @param $params
 	 * @param string $signMethod
 	 * @throws \Exception
-	 * @return string
+	 * @return string|bool
 	 */
 	protected function sign($params,$signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
@@ -378,7 +377,7 @@ HTML;
 			}elseif($params['version'] == '5.1.0'){
 				$sha256 = hash( 'sha256',$signQueryString);
 				$privateKey = $this->getSignPrivateKey();
-				$result = openssl_sign ( $sha256, $signature, $privateKey, 'sha256');
+				$result = openssl_sign ( $sha256, $signature, $privateKey, OPENSSL_ALGO_SHA256);
 				if ($result) {
 					$signature_base64 = base64_encode ( $signature );
 					return $signature_base64;
@@ -509,7 +508,7 @@ HTML;
 		$interval1 = $from->diff ( $now );
 		$interval2 = $now->diff ( $to );
 		if ($interval1->invert || $interval2->invert) {
-			throw new \Exception("signPubKeyCert has expired");
+			throw new \Exception("Public key certificate expired");
 		}
 		$result = openssl_x509_checkpurpose($certBase64String, X509_PURPOSE_ANY,
 			array(
@@ -627,7 +626,7 @@ HTML;
 		if($pkcs12certdata === false ){
 			throw new Exception(  "file_get_contents fail。");
 		}
-		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) == FALSE ){
+		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) === false ){
 			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
 		}
 		return $certs ['pkey'];
@@ -671,5 +670,64 @@ HTML;
 		$file_content_deflate = gzcompress ( $file_content );
 		$file_content_base64 = base64_encode ( $file_content_deflate );
 		return $file_content_base64;
+	}
+
+	/**
+	 * 支付异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onPayNotify($notifyData,callable $callback){
+		if($this->validateSign($notifyData)){
+			if($callback && is_callable($callback)){
+				$queryId = $notifyData['queryId'];
+				return call_user_func_array( $callback , [$notifyData] );
+			}else{
+				print('ok');
+			}
+		}else{
+			throw new \Exception('Invalid paid notify data');
+		}
+	}
+
+	/**
+	 * 退款异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onRefundNotify($notifyData,callable $callback){
+		if($this->validateSign($notifyData)){
+			if($callback && is_callable($callback)){
+				return call_user_func_array( $callback , [$notifyData] );
+			}else{
+				print('ok');
+			}
+		}else{
+			throw new \Exception('Invalid refund notify data');
+		}
+	}
+
+	/**
+	 * 消费撤销异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onPayUndoNotify($notifyData,callable $callback){
+		if($this->validateSign($notifyData)){
+			if($callback && is_callable($callback)){
+				$queryId = $notifyData['queryId'];
+				return call_user_func_array( $callback , [$notifyData] );
+			}else{
+				print('ok');
+			}
+		}else{
+			throw new \Exception('Invalid paid notify data');
+		}
 	}
 }

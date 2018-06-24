@@ -161,7 +161,7 @@ class App extends B2C {
 	/**
 	 * 对控件支付成功返回的结果信息中data域进行验签
 	 * @param string $jsonData json格式数据
-	 * @return bool 是否成功
+	 * @return bool
 	 */
 	public function verifyAppResponse($jsonData) {
 		$data = json_decode($jsonData);
@@ -171,7 +171,7 @@ class App extends B2C {
 		$signature = base64_decode ( $sign );
 		$params_sha1x16 = sha1 ( $data, FALSE );
 		$isSuccess = openssl_verify ( $params_sha1x16, $signature,$public_key, OPENSSL_ALGO_SHA1 );
-		return $isSuccess;
+		return ($isSuccess === 1) ? true:false;
 	}
 
 }

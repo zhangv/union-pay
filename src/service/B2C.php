@@ -42,19 +42,6 @@ class B2C extends UnionPay{
 		return $this->createPostForm($params);
 	}
 
-	public function onPayNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			}else{
-				print('ok');
-			}
-		}else{
-			throw new \Exception('Invalid paid notify data');
-		}
-	}
-
 	/**
 	 * 消费撤销
 	 * @param string $orderId
@@ -137,25 +124,6 @@ class B2C extends UnionPay{
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
 		return $result;
-	}
-
-	/**
-	 * 退款异步通知处理
-	 * @param array $notifyData
-	 * @param callable $callback
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function onRefundNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				return call_user_func_array( $callback , [$notifyData] );
-			}else{
-				print('ok');
-			}
-		}else{
-			throw new \Exception('Invalid paid notify data');
-		}
 	}
 
 	/**

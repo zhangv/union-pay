@@ -136,19 +136,6 @@ class DirectDebit extends B2C {
 		return $this->createPostForm($params);
 	}
 
-	public function onPayNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			}else{
-				print('ok');
-			}
-		}else{
-			throw new \Exception('Invalid paid notify data');
-		}
-	}
-
 	/**
 	 * 代收(使用绑定标识号)
 	 * @param string $orderId
@@ -172,6 +159,7 @@ class DirectDebit extends B2C {
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt ,
+			'bindId' => $bindId,
 			'currencyCode' => '156',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
@@ -195,26 +183,6 @@ class DirectDebit extends B2C {
 	}
 
 	/**
-	 * 消费撤销异步通知处理
-	 * @param array $notifyData
-	 * @param callable $callback
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function onPayUndoNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			}else{
-				print('ok');
-			}
-		}else{
-			throw new \Exception('Invalid paid notify data');
-		}
-	}
-
-	/**
 	 * 退款
 	 * @param $orderId
 	 * @param $origQryId
@@ -225,25 +193,6 @@ class DirectDebit extends B2C {
 	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
 		$ext['bizType'] = UnionPay::BIZTYPE_DIRECTDEBIT;
 		return parent::refund($orderId,$origQryId,$refundAmt,$ext);
-	}
-
-	/**
-	 * 退款异步通知处理
-	 * @param array $notifyData
-	 * @param callable $callback
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function onRefundNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				return call_user_func_array( $callback , [$notifyData] );
-			}else{
-				print('ok');
-			}
-		}else{
-			throw new \Exception('Invalid paid notify data');
-		}
 	}
 
 	/**
@@ -489,7 +438,7 @@ class DirectDebit extends B2C {
 	 * @param string $batchNo
 	 * @param array $totalQty
 	 * @param array $totalAmt
-	 * @param array $filePath
+	 * @param string $filePath
 	 * @param array $ext
 	 * @throws Exception
 	 * @return array
