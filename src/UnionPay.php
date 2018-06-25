@@ -195,41 +195,41 @@ HTML;
 	 * @throws \Exception
 	 */
 	protected function post($params, $url, $validateResp = true) {
-		$postbody = $this->getRequestParamString ( $params );
-		$headers = array ('Content-type:application/x-www-form-urlencoded;charset=UTF-8') ;
+		$postbody = $this->getRequestParamString($params);
+		$headers = array('Content-type:application/x-www-form-urlencoded;charset=UTF-8');
 		$opts = array(
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSLVERSION => 1
 		);
-		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
-		if(!$this->response || $this->response == '') {
+		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
+		if (!$this->response || $this->response == '') {
 			throw new Exception("No response from remote host");
 		}
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
-		if(empty($this->responseArray['respCode'])){
+		if (empty($this->responseArray['respCode'])) {
 			throw new Exception("Response error - {$this->response}, request: {$postbody}");
 		}
 
 		$this->respCode = $this->responseArray['respCode'];
 		$this->respMsg = $this->responseArray['respMsg'];
-		if($this->respCode == UnionPay::RESPCODE_SUCCESS){
-			if($validateResp === true && !$this->validateSign($this->responseArray)){
+		if ($this->respCode == UnionPay::RESPCODE_SUCCESS) {
+			if ($validateResp === true && !$this->validateSign($this->responseArray)) {
 				throw new \Exception("Signature verification failed, response: {$this->response}");
-			} else {
+			}else {
 				return $this->responseArray;
 			}
-		} else{
-			throw new \Exception($this->respMsg . ' - request:'.$postbody.', response:'. $this->response);
+		}else {
+			throw new \Exception($this->respMsg . ' - request:' . $postbody . ', response:' . $this->response);
 		}
 	}
 
 	protected function get($params, $url) {
-		return $this->httpClient->get($url,$params);
+		return $this->httpClient->get($url, $params);
 	}
 
-	public function convertQueryStringToArray($str, $urldecode = false){
+	public function convertQueryStringToArray($str, $urldecode = false) {
 		$result = array();
 		$len = strlen($str);
 		$temp = "";
@@ -261,7 +261,7 @@ HTML;
 				$this->putKeyValueToDictionary($temp, $isKey, $key, $result, $urldecode);
 				$temp = "";
 				$isKey = true;
-			}else {
+			} else {
 				$temp .= $curChar;
 			}
 		}
@@ -272,17 +272,17 @@ HTML;
 	private function putKeyValueToDictionary($temp, $isKey, $key, &$result, $needUrlDecode) {
 		if ($isKey) {
 			$key = $temp;
-			if (strlen ( $key ) == 0) {
+			if (strlen($key) == 0) {
 				return false;
 			}
 			$result [$key] = "";
-		} else {
-			if (strlen ( $key ) == 0) {
+		}else {
+			if (strlen($key) == 0) {
 				return false;
 			}
 			if ($needUrlDecode) {
-							$result [$key] = urldecode ( $temp );
-			} else {
+							$result [$key] = urldecode($temp);
+			}else {
 							$result [$key] = $temp;
 			}
 		}
@@ -296,20 +296,20 @@ HTML;
 	 */
 	protected function getRequestParamString($params) {
 		$params_str = '';
-		foreach ( $params as $key => $value ) {
-			if(trim($value)=='') {
+		foreach ($params as $key => $value) {
+			if (trim($value) == '') {
 				continue;
 			}
-			$params_str .= ($key . '=' . (!isset ( $value ) ? '' : urlencode( $value )) . '&');
+			$params_str .= ($key . '=' . (!isset ($value) ? '' : urlencode($value)) . '&');
 		}
-		return substr ( $params_str, 0, strlen ( $params_str ) - 1 );
+		return substr($params_str, 0, strlen($params_str) - 1);
 	}
 
 	/**
 	 * 取签名证书ID(SN)
 	 * @return string
 	 */
-	protected function getSignCertId(){
+	protected function getSignCertId() {
 		return $this->getCertIdPfx($this->config['signCertPath']);
 	}
 
@@ -352,18 +352,18 @@ HTML;
 	 * @param string $url
 	 * @return string
 	 */
-	protected function createPostForm($params,$title = '支付',$url = null){
+	protected function createPostForm($params, $title = '支付', $url = null) {
 		$input = '';
-		foreach($params as $key => $item) {
-			if(trim($item)=='') {
+		foreach ($params as $key => $item) {
+			if (trim($item) == '') {
 				continue;
 			}
 			$input .= "\t\t<input type=\"hidden\" name=\"{$key}\" value=\"{$item}\">\n";
 		}
-		if(!$url) {
+		if (!$url) {
 			$url = $this->frontTransUrl;
 		}
-		return sprintf($this->formTemplate, $title,$url, $input);
+		return sprintf($this->formTemplate, $title, $url, $input);
 	}
 
 	/**
@@ -373,32 +373,32 @@ HTML;
 	 * @throws \Exception
 	 * @return string|bool
 	 */
-	protected function sign($params,$signMethod = UnionPay::SIGNMETHOD_RSA) {
+	protected function sign($params, $signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
-		if(empty($signData['certId'])) {
-			$signData['certId'] =  $this->getSignCertId();
+		if (empty($signData['certId'])) {
+			$signData['certId'] = $this->getSignCertId();
 		}
 		ksort($signData);
-		$signQueryString = $this->arrayToString($signData,true);
-		if($signMethod == UnionPay::SIGNMETHOD_RSA) {
-			if($params['version'] == '5.0.0'){
+		$signQueryString = $this->arrayToString($signData, true);
+		if ($signMethod == UnionPay::SIGNMETHOD_RSA) {
+			if ($params['version'] == '5.0.0') {
 				$datasha1 = sha1($signQueryString);
 				$signed = $this->rsaSign($datasha1);
 				return $signed;
-			} elseif($params['version'] == '5.1.0'){
-				$sha256 = hash( 'sha256',$signQueryString);
+			} elseif ($params['version'] == '5.1.0') {
+				$sha256 = hash('sha256', $signQueryString);
 				$privateKey = $this->getSignPrivateKey();
-				$result = openssl_sign ( $sha256, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+				$result = openssl_sign($sha256, $signature, $privateKey, OPENSSL_ALGO_SHA256);
 				if ($result) {
-					$signature_base64 = base64_encode ( $signature );
+					$signature_base64 = base64_encode($signature);
 					return $signature_base64;
-				} else {
+				}else {
 					throw new \Exception("Error while signing");
 				}
-			} else {
+			}else {
 				throw new \Exception("Unsupported version - {$params['version']}");
 			}
-		} else {
+		}else {
 			throw new \Exception("Unsupported Sign Method - {$signMethod}");
 		}
 	}
@@ -409,18 +409,18 @@ HTML;
 	 * @param boolean $sort
 	 * @return string
 	 */
-	protected function arrayToString($arr,$sort = false){
+	protected function arrayToString($arr, $sort = false) {
 		$str = '';
 		$para = $arr;
-		if($sort){
-			ksort ( $para );
-			reset ( $para );
+		if ($sort) {
+			ksort($para);
+			reset($para);
 		}
-		foreach($para as $key => $value) {
-			if(trim($value)=='') {
+		foreach ($para as $key => $value) {
+			if (trim($value) == '') {
 				continue;
 			}
-			$str .= $key.'='.$value.'&';
+			$str .= $key . '=' . $value . '&';
 		}
 		return substr($str, 0, strlen($str) - 1);
 	}
@@ -430,10 +430,10 @@ HTML;
 	 * @param string $data 待签名数据
 	 * @return mixed
 	 */
-	protected function rsaSign($data){
+	protected function rsaSign($data) {
 		$privatekey = $this->getSignPrivateKey();
 		$result = openssl_sign($data, $signature, $privatekey);
-		if($result) {
+		if ($result) {
 			return base64_encode($signature);
 		}
 		return false;
@@ -454,44 +454,44 @@ HTML;
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function validateSign($params){
-		if($params['signMethod'] == UnionPay::SIGNMETHOD_RSA){
+	public function validateSign($params) {
+		if ($params['signMethod'] == UnionPay::SIGNMETHOD_RSA) {
 			$signaturebase64 = $params['signature'];
 			$verifyArr = $params;
 			unset($verifyArr['signature']);
 			ksort($verifyArr);
 			$verifyStr = $this->arrayToString($verifyArr);
 
-			if($params['version'] == '5.0.0'){ //测试环境公钥证书不正确
+			if ($params['version'] == '5.0.0') { //测试环境公钥证书不正确
 				$certId = $params['certId'];
 				$publicKey = $this->getVerifyPublicKey($certId);
-				$verifySha1 = sha1($verifyStr,FALSE);
+				$verifySha1 = sha1($verifyStr, FALSE);
 				$signature = base64_decode($signaturebase64);
-				$result = openssl_verify($verifySha1, $signature, $publicKey,OPENSSL_ALGO_SHA1);
-				if($result === -1) {
-					throw new \Exception('Verify Error:'.openssl_error_string());
+				$result = openssl_verify($verifySha1, $signature, $publicKey, OPENSSL_ALGO_SHA1);
+				if ($result === -1) {
+					throw new \Exception('Verify Error:' . openssl_error_string());
 				}
 				return $result;
-			} elseif($params['version'] == '5.1.0'){
+			} elseif ($params['version'] == '5.1.0') {
 				$signPubKeyCert = $params['signPubKeyCert'];
 				$cert = $this->verifyAndGetVerifyCert($signPubKeyCert);
 
-				if($cert == null){
+				if ($cert == null) {
 					return false;
-				} else{
+				}else {
 					$verifySha256 = hash('sha256', $verifyStr);
 					$signature = base64_decode($signaturebase64);
-					$result = openssl_verify ( $verifySha256, $signature,$cert, "sha256" );
-					if($result === -1) {
-						throw new \Exception('Verify Error:'.openssl_error_string());
+					$result = openssl_verify($verifySha256, $signature, $cert, "sha256");
+					if ($result === -1) {
+						throw new \Exception('Verify Error:' . openssl_error_string());
 					}
 					return $result;
 				}
-			} else {
+			}else {
 				throw new \Exception("Unsupported version {$params['version']}");
 			}
-		} else{
-			return $this->validateBySecureKey($params,$this->config['secureKey']);
+		}else {
+			return $this->validateBySecureKey($params, $this->config['secureKey']);
 		}
 	}
 
@@ -501,31 +501,31 @@ HTML;
 	 * @return mixed|null
 	 * @throws Exception
 	 */
-	public function verifyAndGetVerifyCert($certBase64String){
-		if (array_key_exists($certBase64String, UnionPay::$verifyCerts510)){
+	public function verifyAndGetVerifyCert($certBase64String) {
+		if (array_key_exists($certBase64String, UnionPay::$verifyCerts510)) {
 			return UnionPay::$verifyCerts510[$certBase64String];
 		}
 
-		if(trim($this->config['verifyRootCertPath']) == '' || trim($this->config['verifyMiddleCertPath']) == ''){
+		if (trim($this->config['verifyRootCertPath']) == '' || trim($this->config['verifyMiddleCertPath']) == '') {
 			throw new \Exception("Root certificate and middle certificate should be configured");
 		}
 		openssl_x509_read($certBase64String);
 		$certInfo = openssl_x509_parse($certBase64String);
 
 		$cn = $this->getIdentitiesFromCertficate($certInfo);
-		if($this->config['ifValidateCNName'] === true){
-			if("中国银联股份有限公司" != $cn){
+		if ($this->config['ifValidateCNName'] === true) {
+			if ("中国银联股份有限公司" != $cn) {
 				return null;
 			}
-		} elseif("中国银联股份有限公司" != $cn && "00040000:SIGN" != $cn){
+		} elseif ("中国银联股份有限公司" != $cn && "00040000:SIGN" != $cn) {
 			return null;
 		}
 
-		$from = date_create ( '@' . $certInfo ['validFrom_time_t'] );
-		$to = date_create ( '@' . $certInfo ['validTo_time_t'] );
-		$now = date_create ( date ( 'Ymd' ) );
-		$interval1 = $from->diff ( $now );
-		$interval2 = $now->diff ( $to );
+		$from = date_create('@' . $certInfo ['validFrom_time_t']);
+		$to = date_create('@' . $certInfo ['validTo_time_t']);
+		$now = date_create(date('Ymd'));
+		$interval1 = $from->diff($now);
+		$interval2 = $now->diff($to);
 		if ($interval1->invert || $interval2->invert) {
 			throw new \Exception("Public key certificate expired");
 		}
@@ -537,10 +537,10 @@ HTML;
 		);
 		if ($result === FALSE) {
 			return null;
-		}else if ($result === TRUE) {
+		} else if ($result === TRUE) {
 			UnionPay::$verifyCerts510[$certBase64String] = $certBase64String;
 			return UnionPay::$verifyCerts510[$certBase64String];
-		}else {
+		} else {
 			throw new \Exception("validate signPubKeyCert by rootCert failed with error");
 		}
 	}
@@ -571,19 +571,19 @@ HTML;
 			$this->config['verifyMiddleCertPath'],
 			$this->config['encryptCertPath'],
 		]);
-		if(!isset($pubkeys[$certId])) {
-			throw new \Exception("Public key not found with certificate id ($certId), existing ones " . implode(',',array_keys($pubkeys)));
+		if (!isset($pubkeys[$certId])) {
+			throw new \Exception("Public key not found with certificate id ($certId), existing ones " . implode(',', array_keys($pubkeys)));
 		}
 		return $pubkeys[$certId];
 	}
 
-	protected function getVerifyPublicKeyByCerts(array $paths){
-		foreach($paths as $path){
+	protected function getVerifyPublicKeyByCerts(array $paths) {
+		foreach ($paths as $path) {
 			$x509data = file_get_contents($path);
 			openssl_x509_read($x509data);
 			$certdata = openssl_x509_parse($x509data);
 			$sn = $certdata['serialNumber'];
-			if(empty(self::$verifyPublicKeys[$sn])){
+			if (empty(self::$verifyPublicKeys[$sn])) {
 				self::$verifyPublicKeys[$sn] = $x509data;
 			}
 		}
@@ -601,9 +601,9 @@ HTML;
 			$params_before_sha256 = $verifyStr . '&' . $sha256secureKey;
 			$params_after_sha256 = hash('sha256', $params_before_sha256);
 			return $params_after_sha256 == $signature;
-		}else if ($params['signMethod'] == UnionPay::SIGNMETHOD_SM3) {
+		} else if ($params['signMethod'] == UnionPay::SIGNMETHOD_SM3) {
 			throw new \Exception("Unsupported signmethod - {$params['signMethod']}");
-		}else {
+		} else {
 			return false;
 		}
 	}
@@ -636,28 +636,28 @@ HTML;
 	protected function decryptData($data) {
 		$cert_path = $this->config['signCertPath'];
 		$cert_pwd = $this->config['signCertPwd'];
-		$data = base64_decode ( $data );
-		$private_key = $this->getSignKeyFromPfx ( $cert_path, $cert_pwd);
-		openssl_private_decrypt ( $data, $crypted, $private_key );
+		$data = base64_decode($data);
+		$private_key = $this->getSignKeyFromPfx($cert_path, $cert_pwd);
+		openssl_private_decrypt($data, $crypted, $private_key);
 		return $crypted;
 	}
 
-	private function getSignKeyFromPfx($certPath, $certPwd){
-		$pkcs12certdata = file_get_contents ( $certPath );
-		if($pkcs12certdata === false ){
-			throw new Exception(  "file_get_contents fail。");
+	private function getSignKeyFromPfx($certPath, $certPwd) {
+		$pkcs12certdata = file_get_contents($certPath);
+		if ($pkcs12certdata === false) {
+			throw new Exception("file_get_contents fail。");
 		}
-		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) === false ){
+		if (openssl_pkcs12_read($pkcs12certdata, $certs, $certPwd) === false) {
 			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
 		}
 		return $certs ['pkey'];
 	}
 
 	protected function getCustomerInfo($customerInfo) {
-		if($customerInfo == null || count($customerInfo) == 0 ) {
+		if ($customerInfo == null || count($customerInfo) == 0) {
 					return "";
 		}
-		return base64_encode ( "{" . $this->arrayToString( $customerInfo, false ) . "}" );
+		return base64_encode("{" . $this->arrayToString($customerInfo, false) . "}");
 	}
 
 	/**
@@ -666,32 +666,32 @@ HTML;
 	 * @return string
 	 */
 	protected function encryptCustomerInfo($customerInfo) {
-		if($customerInfo == null || count($customerInfo) == 0 ) {
+		if ($customerInfo == null || count($customerInfo) == 0) {
 					return "";
 		}
-		$sensitive = ['phoneNo','cvn2','expired'];//'certifTp' certifId ??
+		$sensitive = ['phoneNo', 'cvn2', 'expired']; //'certifTp' certifId ??
 		$sensitiveInfo = array();
-		foreach ( $customerInfo as $key => $value ) {
-			if (in_array($key,$sensitive) ) {
+		foreach ($customerInfo as $key => $value) {
+			if (in_array($key, $sensitive)) {
 				$sensitiveInfo [$key] = $customerInfo [$key];
-				unset ( $customerInfo [$key] );
+				unset ($customerInfo [$key]);
 			}
 		}
-		if( count ($sensitiveInfo) > 0 ){
-			$sensitiveInfoStr = $this->arrayToString( $sensitiveInfo ,true);
-			$encryptedInfo = $this->encryptData( $sensitiveInfoStr);
+		if (count($sensitiveInfo) > 0) {
+			$sensitiveInfoStr = $this->arrayToString($sensitiveInfo, true);
+			$encryptedInfo = $this->encryptData($sensitiveInfoStr);
 			$customerInfo ['encryptedInfo'] = $encryptedInfo;
 		}
-		return base64_encode ( "{" . $this->arrayToString( $customerInfo ) . "}" );
+		return base64_encode("{" . $this->arrayToString($customerInfo) . "}");
 	}
 
-	protected function encodeFileContent($path){
-		$file_content = file_get_contents ( $path );
+	protected function encodeFileContent($path) {
+		$file_content = file_get_contents($path);
 		//UTF8 去掉文本中的 bom头
-		$BOM = chr(239).chr(187).chr(191);
-		$file_content = str_replace($BOM,'',$file_content);
-		$file_content_deflate = gzcompress ( $file_content );
-		$file_content_base64 = base64_encode ( $file_content_deflate );
+		$BOM = chr(239) . chr(187) . chr(191);
+		$file_content = str_replace($BOM, '', $file_content);
+		$file_content_deflate = gzcompress($file_content);
+		$file_content_base64 = base64_encode($file_content_deflate);
 		return $file_content_base64;
 	}
 
@@ -702,15 +702,15 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
+	public function onPayNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
 				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid paid notify data');
 		}
 	}
@@ -722,14 +722,14 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onRefundNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+	public function onRefundNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid refund notify data');
 		}
 	}
@@ -741,15 +741,15 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayUndoNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
+	public function onPayUndoNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
 				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid paid notify data');
 		}
 	}

@@ -61,32 +61,32 @@ class Direct extends UnionPay {
 			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
+		$params['certId'] = $this->getSignCertId();
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
 		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] =  $this->encryptData($accNo);
-		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
+		$params['accNo'] = $this->encryptData($accNo);
+		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
 
 		$params['accType'] = '01';
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
-		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['payTimeout'] = ''; // date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params,'开通');
+		$result = $this->createPostForm($params, '开通');
 		return $result;
 	}
 
-	public function onOpenNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+	public function onOpenNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid opened notify data');
 		}
 	}

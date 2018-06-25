@@ -73,14 +73,14 @@ class DirectToken extends Direct {
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onOpenNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+	public function onOpenNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid opened notify data');
 		}
 	}

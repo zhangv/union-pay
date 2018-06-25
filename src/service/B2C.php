@@ -81,15 +81,15 @@ class B2C extends UnionPay {
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayUndoNotify($notifyData,callable $callback){
-		if($this->validateSign($notifyData)){
-			if($callback && is_callable($callback)){
+	public function onPayUndoNotify($notifyData, callable $callback) {
+		if ($this->validateSign($notifyData)) {
+			if ($callback && is_callable($callback)) {
 				$queryId = $notifyData['queryId'];
-				return call_user_func_array( $callback , [$notifyData] );
-			} else{
+				return call_user_func_array($callback, [$notifyData]);
+			}else {
 				print('ok');
 			}
-		} else{
+		}else {
 			throw new \Exception('Invalid paid notify data');
 		}
 	}

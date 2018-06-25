@@ -34,11 +34,11 @@ class Qrcode extends B2C {
 	 * @return array
 	 * @throws Exception
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
-		if(empty($ext['termId'])) {
+	public function pay($orderId, $txnAmt, $ext = []) {
+		if (empty($ext['termId'])) {
 			throw new Exception("termId is required.");
 		}
-		if(empty($ext['qrNo'])) {
+		if (empty($ext['qrNo'])) {
 			throw new Exception("qrNo is required.");
 		}
 		$params = [
