@@ -16,7 +16,7 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -31,14 +31,14 @@ class App extends B2C {
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'currencyCode' => '156',
-			'defaultPayType' => '0001',	//默认支付方式
+			'defaultPayType' => '0001', //默认支付方式
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->appTransUrl);
+		return $this->post($params, $this->appTransUrl);
 	}
 
 	/**
@@ -49,8 +49,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
-		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
+		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -63,8 +63,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
-		$result = parent::refund($orderId,$origQryId,$refundAmt,$ext);
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
+		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
 		return $result;
 	}
 
@@ -74,8 +74,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$txnTime,$ext = []){
-		return parent::query($orderId,$txnTime,$ext);
+	public function query($orderId, $txnTime, $ext = []) {
+		return parent::query($orderId, $txnTime, $ext);
 	}
 
 	/**
@@ -84,8 +84,8 @@ class App extends B2C {
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
-		return parent::fileDownload($settleDate,$fileType);
+	public function fileDownload($settleDate, $fileType = '00') {
+		return parent::fileDownload($settleDate, $fileType);
 	}
 
 	/**
@@ -96,7 +96,7 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function preAuth($orderId,$amt,$orderDesc,$ext = []){
+	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -115,10 +115,10 @@ class App extends B2C {
 			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->appTransUrl);
+		$result = $this->post($params, $this->appTransUrl);
 		return $result;
 	}
 
@@ -130,8 +130,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthUndo($orderId,$origQryId,$txnAmt,$ext = []){
-		return parent::preAuthUndo($orderId,$origQryId,$txnAmt,$ext);
+	public function preAuthUndo($orderId, $origQryId, $txnAmt, $ext = []) {
+		return parent::preAuthUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -142,8 +142,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthFinish($orderId,$origQryId,$txnAmt,$ext = []){
-		return parent::preAuthFinish($orderId,$origQryId,$txnAmt,$ext);
+	public function preAuthFinish($orderId, $origQryId, $txnAmt, $ext = []) {
+		return parent::preAuthFinish($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -154,8 +154,8 @@ class App extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthFinishUndo($orderId,$origQryId,$txnAmt,$ext = []){
-		return parent::preAuthFinishUndo($orderId,$origQryId,$txnAmt,$ext);
+	public function preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext = []) {
+		return parent::preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -168,9 +168,9 @@ class App extends B2C {
 		$sign = $data->sign;
 		$data = $data->data;
 		$public_key = openssl_x509_read(file_get_contents($this->config['verifyCertPath']));
-		$signature = base64_decode ( $sign );
-		$params_sha1x16 = sha1 ( $data, FALSE );
-		$isSuccess = openssl_verify ( $params_sha1x16, $signature,$public_key, OPENSSL_ALGO_SHA1 );
+		$signature = base64_decode($sign);
+		$params_sha1x16 = sha1($data, FALSE);
+		$isSuccess = openssl_verify($params_sha1x16, $signature, $public_key, OPENSSL_ALGO_SHA1);
 		return ($isSuccess === 1) ? true:false;
 	}
 

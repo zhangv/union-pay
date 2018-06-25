@@ -4,8 +4,8 @@ require_once __DIR__ . "/../autoload.php";
 use zhangv\unionpay\UnionPay;
 
 
-list($mode,$config) = include '../config-direct.php';
-$unionPay = UnionPay::DirectToken($config,$mode);
+list($mode, $config) = include '../config-direct.php';
+$unionPay = UnionPay::DirectToken($config, $mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 2;
@@ -20,5 +20,5 @@ $customerInfo = [
 	'customerNm' => $testAcc['customerNm'], //姓名
 ];
 $ext = ['tokenPayData' => "{trId=62000000001&tokenType=01}"];
-$form = $unionPay->frontOpen($payOrderNo,$accNo,$customerInfo,$ext);
+$form = $unionPay->frontOpen($payOrderNo, $accNo, $customerInfo, $ext);
 echo $form;

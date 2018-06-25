@@ -8,7 +8,7 @@ use zhangv\unionpay\UnionPay;
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
  * */
-class B2C extends UnionPay{
+class B2C extends UnionPay {
 
 	/**
 	 * 支付
@@ -17,7 +17,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -32,12 +32,12 @@ class B2C extends UnionPay{
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'currencyCode' => '156',
-			'defaultPayType' => '0001',	//默认支付方式
+			'defaultPayType' => '0001', //默认支付方式
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -50,7 +50,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -67,10 +67,10 @@ class B2C extends UnionPay{
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -86,10 +86,10 @@ class B2C extends UnionPay{
 			if($callback && is_callable($callback)){
 				$queryId = $notifyData['queryId'];
 				return call_user_func_array( $callback , [$notifyData] );
-			}else{
+			} else{
 				print('ok');
 			}
-		}else{
+		} else{
 			throw new \Exception('Invalid paid notify data');
 		}
 	}
@@ -102,7 +102,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -119,10 +119,10 @@ class B2C extends UnionPay{
 			'txnAmt' => $refundAmt,
 			'backUrl' => $this->config['returnUrl'],
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -134,7 +134,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function preAuth($orderId,$amt,$orderDesc,$ext = []){
+	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -153,10 +153,10 @@ class B2C extends UnionPay{
 			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params,'预授权');
+		$result = $this->createPostForm($params, '预授权');
 		return $result;
 	}
 
@@ -168,7 +168,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function preAuthUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -180,15 +180,15 @@ class B2C extends UnionPay{
 			'channelType' => '07',
 			'orderId' => $orderId,
 		 	'merId' =>  $this->config['merId'],
-			'origQryId' => $origQryId,   //原预授权的queryId，可以从查询接口或者通知接口中获取
+			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,//交易金额，需和原预授权一致
+			'txnAmt' => $txnAmt, //交易金额，需和原预授权一致
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -200,7 +200,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthFinish($orderId,$origQryId,$amt,$ext = []){
+	public function preAuthFinish($orderId, $origQryId, $amt, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -210,17 +210,17 @@ class B2C extends UnionPay{
 			'bizType' => UnionPay::BIZTYPE_B2C,
 			'accessType' => '0',
 			'channelType' => '07',
-			'orderId' => $orderId,//商户订单号，重新产生，不同于原消费
+			'orderId' => $orderId, //商户订单号，重新产生，不同于原消费
 			'merId' =>  $this->config['merId'],
 			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $amt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -232,7 +232,7 @@ class B2C extends UnionPay{
 	 * @param array $ext
 	 * @return array
 	 */
-	public function preAuthFinishUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -249,10 +249,10 @@ class B2C extends UnionPay{
 			'txnAmt' => $txnAmt,
 			'backUrl' => $this->config['notifyUrl'],
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
