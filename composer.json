@@ -48,7 +48,7 @@
       "rm -rf vendor composer.lock",
       "composer install"
     ],
-    "phpstan": "vendor/bin/phpstan analyse -l 4 src",
+    "phpstan": "vendor/bin/phpstan analyse -l 0 src",
     "phpunit": "vendor/bin/phpunit --bootstrap ./vendor/autoload.php ./test/AllTests.php"
   },
   "prefer-stable": true
