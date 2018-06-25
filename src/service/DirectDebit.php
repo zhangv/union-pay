@@ -444,7 +444,9 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function batchPay($orderId, $batchNo, $totalQty, $totalAmt, $filePath, $ext = []) {
-		if (!file_exists($filePath)) throw new Exception("File path does not exists - $filePath");
+		if (!file_exists($filePath)) {
+			throw new Exception("File path does not exists - $filePath");
+		}
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],

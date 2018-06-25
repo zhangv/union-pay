@@ -22,7 +22,7 @@ class HttpClient {
 			$this->instance = curl_init();
 			if ($timeout < 1) {
 				curl_setopt($this->instance, CURLOPT_TIMEOUT_MS, intval($timeout * 1000));
-			}else {
+			} else {
 				curl_setopt($this->instance, CURLOPT_TIMEOUT, intval($timeout));
 			}
 			curl_setopt($this->instance, CURLOPT_RETURNTRANSFER, true);
@@ -32,8 +32,12 @@ class HttpClient {
 	}
 
 	public function get($url, $params = array(), $headers = array(), $opts = array()) {
-		if (!$this->instance)	$this->initInstance($this->timeout);
-		if ($params && count($params) > 0) $url .= '?' . http_build_query($params);
+		if (!$this->instance) {
+			$this->initInstance($this->timeout);
+		}
+		if ($params && count($params) > 0) {
+			$url .= '?' . http_build_query($params);
+		}
 		curl_setopt($this->instance, CURLOPT_URL, $url);
 		curl_setopt($this->instance, CURLOPT_HTTPGET, true);
 		curl_setopt($this->instance, CURLOPT_HTTPHEADER, $headers);
@@ -45,7 +49,9 @@ class HttpClient {
 	}
 
 	public function post($url, $params = array(), $headers = array(), $opts = array()) {
-		if (!$this->instance)	$this->initInstance($this->timeout);
+		if (!$this->instance) {
+			$this->initInstance($this->timeout);
+		}
 		curl_setopt($this->instance, CURLOPT_URL, $url);
 		curl_setopt($this->instance, CURLOPT_POST, true);
 		curl_setopt($this->instance, CURLOPT_POSTFIELDS, $params);
