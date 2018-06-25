@@ -16,7 +16,8 @@ before_install:
 install: travis_retry composer install
 
 script:
-  - ./vendor/bin/phpunit test/AllTests.php --coverage-clover=coverage.xml
+  - composer phpunit
+  - composer phpstan
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -153,6 +153,7 @@ class Direct extends UnionPay {
 		$params = array_merge($params,$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($params,$this->backTransUrl);
+		var_dump($this->response);
 		return $result;
 	}
 

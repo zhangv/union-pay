@@ -163,8 +163,8 @@ HTML;
 	}
 
 	/**
-	 * @param $name
-	 * @param $config
+	 * @param string $name
+	 * @param string $config
 	 * @param string $mode
 	 * @return mixed
 	 */
@@ -342,9 +342,9 @@ HTML;
 
 	/**
 	 * 构建自动提交HTML表单
-	 * @param $params
-	 * @param $title
-	 * @param $url
+	 * @param array $params
+	 * @param string $title
+	 * @param string $url
 	 * @return string
 	 */
 	protected function createPostForm($params,$title = '支付',$url = null){
@@ -359,7 +359,7 @@ HTML;
 
 	/**
 	 * 签名数据
-	 * @param $params
+	 * @param array $params
 	 * @param string $signMethod
 	 * @throws \Exception
 	 * @return string|bool
@@ -478,7 +478,7 @@ HTML;
 
 	/**
 	 * 检查返回结果中的公钥证书是否有效
-	 * @param $certBase64String
+	 * @param string $certBase64String
 	 * @return mixed|null
 	 * @throws Exception
 	 */
@@ -733,7 +733,7 @@ HTML;
 
 	/**
 	 * 加密公钥更新查询
-	 * @param $orderId
+	 * @param string $orderId
 	 * @param array $ext
 	 * @return mixed
 	 */
