@@ -4,13 +4,13 @@ require_once __DIR__ . "/autoload.php";
 use zhangv\unionpay\UnionPay;
 
 $config = include './config.php';
-list($mode,$config) = include './config.php';
-$unionPay = UnionPay::Wap($config,$mode);
+list($mode, $config) = include './config.php';
+$unionPay = UnionPay::Wap($config, $mode);
 
 $orderId = date('YmdHis');
 $amt = 1;
 
-$html = $unionPay->pay($orderId,$amt);
+$html = $unionPay->pay($orderId, $amt);
 echo $html;
 
 /**

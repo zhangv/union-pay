@@ -9,9 +9,9 @@ use zhangv\unionpay\UnionPay;
  * */
 class Charge extends UnionPay {
 
-	public function __construct($config,$mode = UnionPay::MODE_PROD){
-		parent::__construct($config,$mode);
-		if($mode == UnionPay::MODE_TEST){
+	public function __construct($config, $mode = UnionPay::MODE_PROD) {
+		parent::__construct($config, $mode);
+		if ($mode == UnionPay::MODE_TEST) {
 			$this->jfFrontTransUrl = 'https://gateway.test.95516.com/jiaofei/api/frontTransReq.do';
 			$this->jfBackTransUrl = 'https://gateway.test.95516.com/jiaofei/api/backTransReq.do';
 			$this->jfCardTransUrl = "https://gateway.95516.com/jiaofei/api/cardTransReq.do";
@@ -29,7 +29,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontPayBill($orderId,$txnAmt,$bussCode,$billQueryInfo,$ext = []){
+	public function frontPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -50,8 +50,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
 		$params['certId'] =  $this->getSignCertId();
@@ -71,7 +73,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backPayBill($orderId,$txnAmt,$bussCode,$billQueryInfo,$accNo,$customerInfo,$ext = []){
+	public function backPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -91,8 +93,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
@@ -113,7 +117,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function appPayBill($orderId,$txnAmt,$bussCode,$billQueryInfo,$ext = []){
+	public function appPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -133,8 +137,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
@@ -153,7 +159,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryBill($orderId,$txnAmt,$bussCode,$billQueryInfo,$accNo,$customerInfo,$ext = []){
+	public function queryBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -173,8 +179,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
@@ -193,7 +201,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontRepay($orderId,$txnAmt,$billQueryInfo,$ext = []){
+	public function frontRepay($orderId, $txnAmt, $billQueryInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -214,8 +222,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = 'J1_9800_0000_1'; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
 		$params['certId'] =  $this->getSignCertId();
@@ -234,7 +244,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backRepay($orderId,$txnAmt,$billQueryInfo,$accNo,$customerInfo,$ext = []){
+	public function backRepay($orderId, $txnAmt, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -254,8 +264,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = 'J1_9800_0000_1';
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
@@ -275,7 +287,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function appRepay($orderId,$txnAmt,$billQueryInfo,$ext = []){
+	public function appRepay($orderId, $txnAmt, $billQueryInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -295,8 +307,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = 'J1_9800_0000_1';
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
@@ -315,7 +329,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryRepay($orderId,$txnAmt,$bussCode,$billQueryInfo,$accNo,$customerInfo,$ext = []){
+	public function queryRepay($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -335,8 +349,10 @@ class Charge extends UnionPay {
 		];
 		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
 		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
@@ -354,7 +370,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontPayTax($orderId,$txnAmt,$ext = []){
+	public function frontPayTax($orderId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -374,8 +390,10 @@ class Charge extends UnionPay {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params ['bussCode'] = 'S0_9800_0000'; // 业务类型号，此处默认取demo演示页面传递的参数
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
 		$params['certId'] =  $this->getSignCertId();
@@ -393,7 +411,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backPayTax($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
+	public function backPayTax($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -413,8 +431,10 @@ class Charge extends UnionPay {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params ['bussCode'] = 'S0_9800_0000';
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['accNo'] =  $this->encryptData($accNo);
 		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
@@ -433,7 +453,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function appPayTax($orderId,$txnAmt,$ext = []){
+	public function appPayTax($orderId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -453,8 +473,10 @@ class Charge extends UnionPay {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params ['bussCode'] = 'S0_9800_0000';
-		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "")
-			$params ['origQryId'] = $ext ["origQryId"]; // 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists ( "origQryId", $ext ) && $ext ["origQryId"] != "") {
+					$params ['origQryId'] = $ext ["origQryId"];
+		}
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
 		$params['certId'] =  $this->getSignCertId();
 		$params = array_merge($params,$ext);
@@ -470,7 +492,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryTax($orderId,$txnAmt,$billQueryInfo,$ext = []){
+	public function queryTax($orderId, $txnAmt, $billQueryInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -484,17 +506,17 @@ class Charge extends UnionPay {
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'currencyCode' => '156',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params ['bussCode'] = 'S0_9800_0000'; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode ($billQueryInfo ); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
+		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
 
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->jfBackTransUrl);
+		return $this->post($params, $this->jfBackTransUrl);
 	}
 
 	/**
@@ -504,7 +526,7 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function query($orderId,$txnTime,$ext = []){
+	public function query($orderId, $txnTime, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -518,37 +540,37 @@ class Charge extends UnionPay {
 			'orderId' => $orderId,
 			'txnTime' => $txnTime,
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->jfSingleQueryUrl);
+		return $this->post($params, $this->jfSingleQueryUrl);
 	}
 
 	/**
 	 * 获取地区列表
 	 * @return mixed
 	 */
-	public function areas(){
+	public function areas() {
 		$url = "https://gateway.95516.com/jiaofei/config/s/areas";
-		return $this->get([],$url);
+		return $this->get([], $url);
 	}
 
 	/**
 	 * 获取业务目录
 	 * @return mixed
 	 */
-	public function categories($category){
+	public function categories($category) {
 		$url = "https://gateway.95516.com/jiaofei/config/s/categories/{$category}";
-		return $this->get([],$url);
+		return $this->get([], $url);
 	}
 
 	/**
 	 * 获取业务要素
 	 * @return mixed
 	 */
-	public function biz($bussCode){
+	public function biz($bussCode) {
 		$url = "https://gateway.95516.com/jiaofei/config/s/biz/{$bussCode}";
-		return $this->get([],$url);
+		return $this->get([], $url);
 	}
 
 }

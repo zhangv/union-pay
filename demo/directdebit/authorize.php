@@ -3,8 +3,8 @@
 require_once __DIR__ . "/../autoload.php";
 use zhangv\unionpay\UnionPay;
 
-list($mode,$config) = include '../config-direct.php';
-$unionPay = UnionPay::Direct($config,$mode);
+list($mode, $config) = include '../config-direct.php';
+$unionPay = UnionPay::Direct($config, $mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 1;
@@ -18,5 +18,5 @@ $customerInfo = [
 	'certifId' => $testAcc['certifId'], //证件号，15位身份证不校验尾号，18位会校验尾号，请务必在前端写好校验代码
 	'customerNm' => $testAcc['customerNm'], //姓名
 ];
-$form = $unionPay->frontOpen($payOrderNo,$accNo,$customerInfo);
+$form = $unionPay->frontOpen($payOrderNo, $accNo, $customerInfo);
 echo $form;

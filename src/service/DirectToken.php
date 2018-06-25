@@ -16,7 +16,7 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function applyToken($orderId,$txnTime,$tokenPayData,$ext = []){
+	public function applyToken($orderId, $txnTime, $tokenPayData, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -28,15 +28,15 @@ class DirectToken extends Direct {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
+		$params['certId'] = $this->getSignCertId();
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
 		$params['txnTime'] = $txnTime;
 		$params['txnTime'] = $txnTime;
 		$params['tokenPayData'] = $tokenPayData;
-		$params = array_merge($params,$ext);
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -48,9 +48,9 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function backOpen($orderId,$accNo,$customerInfo,$ext = []){
+	public function backOpen($orderId, $accNo, $customerInfo, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_TOKEN;
-		return parent::backOpen($orderId,$accNo,$customerInfo,$ext);
+		return parent::backOpen($orderId, $accNo, $customerInfo, $ext);
 	}
 
 	/**
@@ -61,9 +61,9 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontOpen($orderId,$accNo,$customerInfo,$ext = []){
+	public function frontOpen($orderId, $accNo, $customerInfo, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_TOKEN;
-		return parent::frontOpen($orderId,$accNo,$customerInfo,$ext);
+		return parent::frontOpen($orderId, $accNo, $customerInfo, $ext);
 	}
 
 	/**
@@ -77,10 +77,10 @@ class DirectToken extends Direct {
 		if($this->validateSign($notifyData)){
 			if($callback && is_callable($callback)){
 				return call_user_func_array( $callback , [$notifyData] );
-			}else{
+			} else{
 				print('ok');
 			}
-		}else{
+		} else{
 			throw new \Exception('Invalid opened notify data');
 		}
 	}
@@ -92,9 +92,9 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryOpen($orderId,$accNo,$ext = []){
+	public function queryOpen($orderId, $accNo, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_TOKEN;
-		return parent::queryOpen($orderId,$accNo,$ext);
+		return parent::queryOpen($orderId, $accNo, $ext);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class DirectToken extends Direct {
 	 * @param string $tokenPayData
 	 * @return array
 	 */
-	public function deleteToken($orderId,$txnTime,$tokenPayData){
+	public function deleteToken($orderId, $txnTime, $tokenPayData) {
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -116,13 +116,13 @@ class DirectToken extends Direct {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
+		$params['certId'] = $this->getSignCertId();
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
 		$params['txnTime'] = $txnTime;
 		$params['tokenPayData'] = $tokenPayData;
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -134,7 +134,7 @@ class DirectToken extends Direct {
 	 * @param string $tokenPayData
 	 * @return array
 	 */
-	public function updateToken($orderId,$txnTime,$customerInfo,$tokenPayData){
+	public function updateToken($orderId, $txnTime, $customerInfo, $tokenPayData) {
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -146,15 +146,15 @@ class DirectToken extends Direct {
 			'channelType' => '07',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
+		$params['certId'] = $this->getSignCertId();
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
 		$params['txnTime'] = $txnTime;
-		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
+		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
 		$params['tokenPayData'] = $tokenPayData;
 
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -167,9 +167,9 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function sms($orderId,$accNo,$customerInfo,$smsType = Direct::SMSTYPE_OPEN,$ext = []):array{
+	public function sms($orderId, $accNo, $customerInfo, $smsType = Direct::SMSTYPE_OPEN, $ext = []):array{
 		$ext['bizType'] = UnionPay::BIZTYPE_TOKEN;
-		return parent::sms($orderId,$accNo,$customerInfo,$smsType,$ext);
+		return parent::sms($orderId, $accNo, $customerInfo, $smsType, $ext);
 	}
 
 
@@ -180,7 +180,7 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payByToken($orderId,$txnAmt,$txnTime,$tokenPayData,$ext = []){
+	public function payByToken($orderId, $txnAmt, $txnTime, $tokenPayData, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -190,21 +190,21 @@ class DirectToken extends Direct {
 			'bizType' => UnionPay::BIZTYPE_TOKEN,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => '07',
-			'currencyCode' => '156',          //交易币种，境内商户勿改
+			'currencyCode' => '156', //交易币种，境内商户勿改
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'backUrl' => $this->config['notifyUrl']
 		);
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
 		$params['txnTime'] = $txnTime;
 		$params['txnAmt'] = $txnAmt;
 		$params['tokenPayData'] = $tokenPayData;
 		$customerInfo = $ext['customerInfo'];
-		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($ext,$params);
+		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($ext, $params);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -215,8 +215,8 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payByInstallment($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
-		return parent::payByInstallment($orderId,$txnAmt,$accNo,$customerInfo,$ext);
+	public function payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
+		return parent::payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $ext);
 	}
 
 	/**
@@ -227,7 +227,7 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontOpenPay($orderId,$txnAmt,$accNo,$customerInfo,$ext = []){
+	public function frontOpenPay($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
@@ -240,19 +240,19 @@ class DirectToken extends Direct {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'currencyCode' => '156',
 		);
-		$params['merId' ] =  $this->config['merId'];
-		$params['orderId'] =  $orderId;
-		$params['txnAmt'] =  $txnAmt;
+		$params['merId'] = $this->config['merId'];
+		$params['orderId'] = $orderId;
+		$params['txnAmt'] = $txnAmt;
 		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] =  $this->encryptData($accNo);
-		$params['customerInfo'] =  $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
+		$params['accNo'] = $this->encryptData($accNo);
+		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
+		$params['certId'] = $this->getSignCertId();
 		$params['accType'] = '01';
 		$params['frontUrl'] = $this->config['openReturnUrl'];
 		$params['backUrl'] = $this->config['openNotifyUrl'];
-		$params['payTimeout'] = '';// date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
+		$params['payTimeout'] = ''; // date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params,'开通并支付');
+		$result = $this->createPostForm($params, '开通并支付');
 		return $result;
 	}
 
@@ -264,8 +264,8 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
-		return parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
+		return parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -276,8 +276,8 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function refund($orderId,$origQryId,$txnAmt,$ext = []){
-		return parent::refund($orderId,$origQryId,$txnAmt,$ext);
+	public function refund($orderId, $origQryId, $txnAmt, $ext = []) {
+		return parent::refund($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -287,7 +287,7 @@ class DirectToken extends Direct {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId, $txnTime, $ext = []){
+	public function query($orderId, $txnTime, $ext = []) {
 		return parent::query($orderId, $txnTime, $ext);
 	}
 
@@ -297,8 +297,8 @@ class DirectToken extends Direct {
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
-		parent::fileDownload($settleDate,$fileType);
+	public function fileDownload($settleDate, $fileType = '00') {
+		parent::fileDownload($settleDate, $fileType);
 	}
 
 }

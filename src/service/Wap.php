@@ -17,9 +17,9 @@ class Wap extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId, $txnAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::pay($orderId,$txnAmt,$ext);
+		$result = parent::pay($orderId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -31,9 +31,9 @@ class Wap extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
+		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -45,9 +45,9 @@ class Wap extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::refund($orderId,$origQryId,$refundAmt,$ext);
+		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
 		return $result;
 	}
 

@@ -19,7 +19,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function authorize($orderId,$accNo,$customerInfo,$ext = []){
+	public function authorize($orderId, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -38,8 +38,8 @@ class DirectDebit extends B2C {
 		];
 		$params['accNo'] = $accNo;
 		$params['customerInfo'] = $this->getCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -52,7 +52,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backAuthorize($orderId,$accNo,$customerInfo,$ext = []){
+	public function backAuthorize($orderId, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -69,10 +69,10 @@ class DirectDebit extends B2C {
 		];
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -82,7 +82,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function unauthorize($orderId,$accNo,$ext = []){
+	public function unauthorize($orderId, $accNo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -98,10 +98,10 @@ class DirectDebit extends B2C {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params['accNo'] = $this->encryptData($accNo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId, $txnAmt, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -126,12 +126,12 @@ class DirectDebit extends B2C {
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'currencyCode' => '156',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -144,7 +144,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function payByBindId($orderId,$txnAmt,$bindId,$ext = []){
+	public function payByBindId($orderId, $txnAmt, $bindId, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -158,13 +158,13 @@ class DirectDebit extends B2C {
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'bindId' => $bindId,
 			'currencyCode' => '156',
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -177,9 +177,9 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_DIRECTDEBIT;
-		return parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
+		return parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -190,9 +190,9 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_DIRECTDEBIT;
-		return parent::refund($orderId,$origQryId,$refundAmt,$ext);
+		return parent::refund($orderId, $origQryId, $refundAmt, $ext);
 	}
 
 	/**
@@ -202,8 +202,8 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$txnTime,$ext = []){
-		return parent::query($orderId,$txnTime,$ext);
+	public function query($orderId, $txnTime, $ext = []) {
+		return parent::query($orderId, $txnTime, $ext);
 	}
 
 	/**
@@ -215,7 +215,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backBind($orderId,$accNo,$customerInfo,$bindId,$ext = []){
+	public function backBind($orderId, $accNo, $customerInfo, $bindId, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -234,10 +234,10 @@ class DirectDebit extends B2C {
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
 		$params['bindId'] = $bindId;
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -249,7 +249,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontBind($orderId,$accNo,$customerInfo,$bindId,$ext = []){
+	public function frontBind($orderId, $accNo, $customerInfo, $bindId, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -270,10 +270,10 @@ class DirectDebit extends B2C {
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
 		$params['bindId'] = $bindId;
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,'绑定');
+		return $this->createPostForm($params, '绑定');
 	}
 
 	/**
@@ -283,7 +283,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryBind($orderId,$bindId,$ext = []){
+	public function queryBind($orderId, $bindId, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -300,10 +300,10 @@ class DirectDebit extends B2C {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params['bindId'] = $bindId;
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -313,7 +313,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function removeBind($orderId,$bindId,$ext = []){
+	public function removeBind($orderId, $bindId, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -330,10 +330,10 @@ class DirectDebit extends B2C {
 			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 		];
 		$params['bindId'] = $bindId;
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -344,7 +344,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backAuthenticate($orderId,$accNo,$customerInfo,$ext = []){
+	public function backAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -362,10 +362,10 @@ class DirectDebit extends B2C {
 		];
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -376,7 +376,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontAuthenticate($orderId,$accNo,$customerInfo,$ext = []){
+	public function frontAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -395,10 +395,10 @@ class DirectDebit extends B2C {
 		];
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,'认证');
+		return $this->createPostForm($params, '认证');
 	}
 
 	/**
@@ -409,7 +409,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function smsAuthenticate($orderId,$accNo,$customerInfo,$ext = []){
+	public function smsAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -426,10 +426,10 @@ class DirectDebit extends B2C {
 		];
 		$params['accNo'] = $this->encryptData($accNo);
 		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -443,8 +443,8 @@ class DirectDebit extends B2C {
 	 * @throws Exception
 	 * @return array
 	 */
-	public function batchPay($orderId,$batchNo,$totalQty,$totalAmt,$filePath,$ext = []){
-		if(!file_exists($filePath)) throw new Exception("File path does not exists - $filePath");
+	public function batchPay($orderId, $batchNo, $totalQty, $totalAmt, $filePath, $ext = []) {
+		if (!file_exists($filePath)) throw new Exception("File path does not exists - $filePath");
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -463,10 +463,10 @@ class DirectDebit extends B2C {
 		$params['totalQty'] = $totalQty;
 		$params['totalAmt'] = $totalAmt;
 		$params['fileContent'] = $this->encodeFileContent($filePath);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->batchTransUrl);
+		return $this->post($params, $this->batchTransUrl);
 	}
 
 	/**
@@ -476,7 +476,7 @@ class DirectDebit extends B2C {
 	 * @throws Exception
 	 * @return array
 	 */
-	public function queryBatch($batchNo,$ext = []){
+	public function queryBatch($batchNo, $ext = []) {
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -490,10 +490,10 @@ class DirectDebit extends B2C {
 			'txnTime' => date('YmdHis'),
 		];
 		$params['batchNo'] = $batchNo;
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->batchTransUrl);
+		return $this->post($params, $this->batchTransUrl);
 	}
 
 	/**
@@ -502,8 +502,8 @@ class DirectDebit extends B2C {
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
-		return parent::fileDownload($settleDate,$fileType);
+	public function fileDownload($settleDate, $fileType = '00') {
+		return parent::fileDownload($settleDate, $fileType);
 	}
 
 }

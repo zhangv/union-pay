@@ -19,10 +19,10 @@ class Qrcode extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function apply($orderId,$txnAmt,$ext = []){
+	public function apply($orderId, $txnAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::pay($orderId,$txnAmt,$ext);
+		$result = parent::pay($orderId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -35,8 +35,12 @@ class Qrcode extends B2C {
 	 * @throws Exception
 	 */
 	public function pay($orderId,$txnAmt,$ext = []){
-		if(empty($ext['termId'])) throw new Exception("termId is required.");
-		if(empty($ext['qrNo'])) throw new Exception("qrNo is required.");
+		if(empty($ext['termId'])) {
+			throw new Exception("termId is required.");
+		}
+		if(empty($ext['qrNo'])) {
+			throw new Exception("qrNo is required.");
+		}
 		$params = [
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -50,13 +54,13 @@ class Qrcode extends B2C {
 			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt ,
+			'txnAmt' => $txnAmt,
 			'currencyCode' => '156',
 		];
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params,$this->backTransUrl);
+		return $this->post($params, $this->backTransUrl);
 	}
 
 	/**
@@ -67,10 +71,10 @@ class Qrcode extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function payUndo($orderId,$origQryId,$txnAmt,$ext = []){
+	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::payUndo($orderId,$origQryId,$txnAmt,$ext);
+		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -82,10 +86,10 @@ class Qrcode extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::refund($orderId,$origQryId,$refundAmt,$ext);
+		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
 		return $result;
 	}
 
@@ -96,10 +100,10 @@ class Qrcode extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$txnTime,$ext = []){
+	public function query($orderId, $txnTime, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		return parent::query($orderId,$txnTime,$ext);
+		return parent::query($orderId, $txnTime, $ext);
 	}
 
 	/**
@@ -108,8 +112,8 @@ class Qrcode extends B2C {
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
-		return parent::fileDownload($settleDate,$fileType);
+	public function fileDownload($settleDate, $fileType = '00') {
+		return parent::fileDownload($settleDate, $fileType);
 	}
 
 }

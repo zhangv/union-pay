@@ -21,41 +21,41 @@ use zhangv\unionpay\util\HttpClient;
  */
 
 class UnionPay {
-	const MODE_TEST = 'test',MODE_PROD = 'prod';
-	const SIGNMETHOD_RSA = '01',SIGNMETHOD_SHA256 = '11',SIGNMETHOD_SM3 = '12';
+	const MODE_TEST = 'test', MODE_PROD = 'prod';
+	const SIGNMETHOD_RSA = '01', SIGNMETHOD_SHA256 = '11', SIGNMETHOD_SM3 = '12';
 	const CHANNELTYPE_PC = '07', CHANNELTYPE_MOBILE = '08';
 	const
-		TXNTYPE_CONSUME = '01',TXNTYPE_PREAUTH = '02',TXNTYPE_PREAUTHFINISH = '03',
-		TXNTYPE_REFUND = '04',TXNTYPE_QUERY = '00',
-		TXNTYPE_CONSUMEUNDO = '31',TXNTYPE_PREAUTHUNDO = '32',TXNTYPE_PREAUTHFINISHUNDO = '33',
+		TXNTYPE_CONSUME = '01', TXNTYPE_PREAUTH = '02', TXNTYPE_PREAUTHFINISH = '03',
+		TXNTYPE_REFUND = '04', TXNTYPE_QUERY = '00',
+		TXNTYPE_CONSUMEUNDO = '31', TXNTYPE_PREAUTHUNDO = '32', TXNTYPE_PREAUTHFINISHUNDO = '33',
 		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
-	const TXNTYPE_DIRECTOPEN = '79', TXNTYPE_QUERYOPEN = '78',TXNTYPE_APPLYTOKEN = '79',
-		TXNTYPE_DELETETOKEN = '74',TXNTYPE_UPDATETOKEN = '79';
-	const TXNTYPE_AUTHORIZE = '72',TXNTYPE_UNAUTHORIZE = '74',TXNTYPE_QUERYBIND = '75',
-		TXNTYPE_DIRECTDEBIT = '11',TXNTYPE_AUTHENTICATE = '77',TXNTYPE_BATCHDEBIT = '21',
+	const TXNTYPE_DIRECTOPEN = '79', TXNTYPE_QUERYOPEN = '78', TXNTYPE_APPLYTOKEN = '79',
+		TXNTYPE_DELETETOKEN = '74', TXNTYPE_UPDATETOKEN = '79';
+	const TXNTYPE_AUTHORIZE = '72', TXNTYPE_UNAUTHORIZE = '74', TXNTYPE_QUERYBIND = '75',
+		TXNTYPE_DIRECTDEBIT = '11', TXNTYPE_AUTHENTICATE = '77', TXNTYPE_BATCHDEBIT = '21',
 		TXNTYPE_QUERYBATCHDEBIT = '22';
-	const TXNTYPE_PAYBILL = '13',TXNTYPE_QUERYTAX = '73';
+	const TXNTYPE_PAYBILL = '13', TXNTYPE_QUERYTAX = '73';
 	const
 		BIZTYPE_B2C = '000201', //网关
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
 		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
-		BIZTYPE_B2B = '000202',//B2B
-		BIZTYPE_DIRECTDEBIT = '000501',//代收
-		BIZTYPE_CHARGE = '000601',//缴费产品
-		BIZTYPE_QRCODE = '000000';//二维码支付
+		BIZTYPE_B2B = '000202', //B2B
+		BIZTYPE_DIRECTDEBIT = '000501', //代收
+		BIZTYPE_CHARGE = '000601', //缴费产品
+		BIZTYPE_QRCODE = '000000'; //二维码支付
 
 	const
-		ACCESSTYPE_MERCHANT = '0',//商户直连接入
-		ACCESSTYPE_ACQUIRER = '1',//收单机构接入
-		ACCESSTYPE_PLATFORM = '2';//平台商户接入
+		ACCESSTYPE_MERCHANT = '0', //商户直连接入
+		ACCESSTYPE_ACQUIRER = '1', //收单机构接入
+		ACCESSTYPE_PLATFORM = '2'; //平台商户接入
 	const
-		RESPCODE_SUCCESS = '00',RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
-	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02',SMSTYPE_PREAUTH = '04',SMSTYPE_OTHER = '05';
+		RESPCODE_SUCCESS = '00', RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
+	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02', SMSTYPE_PREAUTH = '04', SMSTYPE_OTHER = '05';
 
-	protected $txnmap = [ //This fucking map is killing me.
+	protected $txnmap = [//This fucking map is killing me.
 		self::BIZTYPE_DIRECTDEBIT =>[
-			self::TXNTYPE_AUTHORIZE => ['11','01','10'],
-			self::TXNTYPE_UNAUTHORIZE => ['04','00'],
+			self::TXNTYPE_AUTHORIZE => ['11', '01', '10'],
+			self::TXNTYPE_UNAUTHORIZE => ['04', '00'],
 			self::TXNTYPE_DIRECTDEBIT => ['00'],
 			self::TXNTYPE_CONSUMEUNDO => ['00'],
 			self::TXNTYPE_REFUND => ['00'],
@@ -79,21 +79,21 @@ class UnionPay {
 		self::BIZTYPE_DIRECT => [
 			self::TXNTYPE_DIRECTOPEN => ['00'],
 			self::TXNTYPE_QUERYOPEN => ['00'],
-			self::TXNTYPE_CONSUME => ['01','03'],
-			self::TXNTYPE_AUTHENTICATE => ['00','02','04','05'],//sms
+			self::TXNTYPE_CONSUME => ['01', '03'],
+			self::TXNTYPE_AUTHENTICATE => ['00', '02', '04', '05'], //sms
 			self::TXNTYPE_CONSUMEUNDO => ['00'],
 			self::TXNTYPE_REFUND => ['00'],
 		],
-		self::BIZTYPE_TOKEN => [ //extends Direct
-			self::TXNTYPE_APPLYTOKEN => ['05','03'],
+		self::BIZTYPE_TOKEN => [//extends Direct
+			self::TXNTYPE_APPLYTOKEN => ['05', '03'],
 			self::TXNTYPE_DELETETOKEN => ['01'],
 		],
-		self::BIZTYPE_QRCODE => [ //extends B2C
+		self::BIZTYPE_QRCODE => [//extends B2C
 			self::TXNTYPE_CONSUME => ['06'],
 		],
 		self::BIZTYPE_CHARGE => [
 			self::TXNTYPE_PAYBILL => [
-				'01',//bill
+				'01', //bill
 				'02' //tax
 			]
 		]
@@ -115,7 +115,7 @@ class UnionPay {
 
 	public $response;
 	public $responseArray;
-	public $respCode,$respMsg;
+	public $respCode, $respMsg;
 	public static $verifyCerts510 = [];
 	public static $verifyPublicKeys = [];
 	/** @var array 支付配置 */
@@ -149,11 +149,11 @@ class UnionPay {
 </html>
 HTML;
 
-	public function __construct($config,$mode = UnionPay::MODE_PROD){
+	public function __construct($config, $mode = UnionPay::MODE_PROD) {
 		$this->config = $config;
 		$this->mode = $mode;
 		$this->httpClient = new HttpClient(3);
-		if($mode == UnionPay::MODE_TEST){
+		if ($mode == UnionPay::MODE_TEST) {
 			$this->frontTransUrl = 'https://gateway.test.95516.com/gateway/api/frontTransReq.do';
 			$this->backTransUrl = 'https://gateway.test.95516.com/gateway/api/backTransReq.do';
 			$this->appTransUrl = "https://gateway.test.95516.com/gateway/api/appTransReq.do";
@@ -168,9 +168,9 @@ HTML;
 	 * @param string $mode
 	 * @return mixed
 	 */
-	private static function load($name,$config,$mode = self::MODE_PROD){
+	private static function load($name, $config, $mode = self::MODE_PROD) {
 		$service = __NAMESPACE__ . "\\service\\{$name}";
-		return new $service($config,$mode);
+		return new $service($config, $mode);
 	}
 
 	/**
@@ -179,11 +179,11 @@ HTML;
 	 *
 	 * @return mixed
 	 */
-	public static function __callStatic($name, $arguments){
+	public static function __callStatic($name, $arguments) {
 		return self::load($name, ...$arguments);
 	}
 
-	public function setHttpClient($httpClient){
+	public function setHttpClient($httpClient) {
 		$this->httpClient = $httpClient;
 	}
 
@@ -204,7 +204,9 @@ HTML;
 			CURLOPT_SSLVERSION => 1
 		);
 		$this->response = $this->httpClient->post($url,$postbody,$headers,$opts);
-		if(!$this->response || $this->response == '') throw new Exception("No response from remote host");
+		if(!$this->response || $this->response == '') {
+			throw new Exception("No response from remote host");
+		}
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
 		if(empty($this->responseArray['respCode'])){
 			throw new Exception("Response error - {$this->response}, request: {$postbody}");
@@ -215,10 +217,10 @@ HTML;
 		if($this->respCode == UnionPay::RESPCODE_SUCCESS){
 			if($validateResp === true && !$this->validateSign($this->responseArray)){
 				throw new \Exception("Signature verification failed, response: {$this->response}");
-			}else {
+			} else {
 				return $this->responseArray;
 			}
-		}else{
+		} else{
 			throw new \Exception($this->respMsg . ' - request:'.$postbody.', response:'. $this->response);
 		}
 	}
@@ -236,30 +238,30 @@ HTML;
 		$isOpen = false;
 		$openName = "\0";
 
-		for($i=0; $i<$len; $i++){
+		for ($i = 0; $i < $len; $i++) {
 			$curChar = $str[$i];
-			if($isOpen){
-				if( $curChar == $openName){
+			if ($isOpen) {
+				if ($curChar == $openName) {
 					$isOpen = false;
 				}
 				$temp .= $curChar;
-			} elseif ($curChar == "{"){
+			} elseif ($curChar == "{") {
 				$isOpen = true;
 				$openName = "}";
 				$temp .= $curChar;
-			} elseif ($curChar == "["){
+			} elseif ($curChar == "[") {
 				$isOpen = true;
 				$openName = "]";
 				$temp .= $curChar;
-			} elseif ($isKey && $curChar == "="){
+			} elseif ($isKey && $curChar == "=") {
 				$key = $temp;
 				$temp = "";
 				$isKey = false;
-			} elseif ( $curChar == "&" && !$isOpen){
+			} elseif ($curChar == "&" && !$isOpen) {
 				$this->putKeyValueToDictionary($temp, $isKey, $key, $result, $urldecode);
 				$temp = "";
 				$isKey = true;
-			} else {
+			}else {
 				$temp .= $curChar;
 			}
 		}
@@ -278,10 +280,11 @@ HTML;
 			if (strlen ( $key ) == 0) {
 				return false;
 			}
-			if ($needUrlDecode)
-				$result [$key] = urldecode ( $temp );
-			else
-				$result [$key] = $temp;
+			if ($needUrlDecode) {
+							$result [$key] = urldecode ( $temp );
+			} else {
+							$result [$key] = $temp;
+			}
 		}
 	}
 
@@ -294,7 +297,9 @@ HTML;
 	protected function getRequestParamString($params) {
 		$params_str = '';
 		foreach ( $params as $key => $value ) {
-			if(trim($value)=='') continue;
+			if(trim($value)=='') {
+				continue;
+			}
 			$params_str .= ($key . '=' . (!isset ( $value ) ? '' : urlencode( $value )) . '&');
 		}
 		return substr ( $params_str, 0, strlen ( $params_str ) - 1 );
@@ -312,7 +317,7 @@ HTML;
 	 * 取签名证书ID(SN)
 	 * @return string
 	 */
-	protected function getEncryptCertId(){
+	protected function getEncryptCertId() {
 		return $this->getCertIdPfx($this->config['signCertPath']);
 	}
 
@@ -320,7 +325,7 @@ HTML;
 	 * 取.pfx格式证书ID(SN)
 	 * @return string
 	 */
-	protected function getCertIdPfx($path){
+	protected function getCertIdPfx($path) {
 		$pkcs12certdata = file_get_contents($path);
 		openssl_pkcs12_read($pkcs12certdata, $certs, $this->config['signCertPwd']);
 		$x509data = $certs['cert'];
@@ -333,7 +338,7 @@ HTML;
 	 * 取.cer格式证书ID(SN)
 	 * @return string
 	 */
-	protected function getCertIdCer($path){
+	protected function getCertIdCer($path) {
 		$x509data = file_get_contents($path);
 		openssl_x509_read($x509data);
 		$certdata = openssl_x509_parse($x509data);
@@ -350,10 +355,14 @@ HTML;
 	protected function createPostForm($params,$title = '支付',$url = null){
 		$input = '';
 		foreach($params as $key => $item) {
-			if(trim($item)=='') continue;
+			if(trim($item)=='') {
+				continue;
+			}
 			$input .= "\t\t<input type=\"hidden\" name=\"{$key}\" value=\"{$item}\">\n";
 		}
-		if(!$url) $url = $this->frontTransUrl;
+		if(!$url) {
+			$url = $this->frontTransUrl;
+		}
 		return sprintf($this->formTemplate, $title,$url, $input);
 	}
 
@@ -366,7 +375,9 @@ HTML;
 	 */
 	protected function sign($params,$signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
-		if(empty($signData['certId'])) $signData['certId'] =  $this->getSignCertId();
+		if(empty($signData['certId'])) {
+			$signData['certId'] =  $this->getSignCertId();
+		}
 		ksort($signData);
 		$signQueryString = $this->arrayToString($signData,true);
 		if($signMethod == UnionPay::SIGNMETHOD_RSA) {
@@ -374,7 +385,7 @@ HTML;
 				$datasha1 = sha1($signQueryString);
 				$signed = $this->rsaSign($datasha1);
 				return $signed;
-			}elseif($params['version'] == '5.1.0'){
+			} elseif($params['version'] == '5.1.0'){
 				$sha256 = hash( 'sha256',$signQueryString);
 				$privateKey = $this->getSignPrivateKey();
 				$result = openssl_sign ( $sha256, $signature, $privateKey, OPENSSL_ALGO_SHA256);
@@ -384,7 +395,9 @@ HTML;
 				} else {
 					throw new \Exception("Error while signing");
 				}
-			}else throw new \Exception("Unsupported version - {$params['version']}");
+			} else {
+				throw new \Exception("Unsupported version - {$params['version']}");
+			}
 		} else {
 			throw new \Exception("Unsupported Sign Method - {$signMethod}");
 		}
@@ -404,7 +417,9 @@ HTML;
 			reset ( $para );
 		}
 		foreach($para as $key => $value) {
-			if(trim($value)=='') continue;
+			if(trim($value)=='') {
+				continue;
+			}
 			$str .= $key.'='.$value.'&';
 		}
 		return substr($str, 0, strlen($str) - 1);
@@ -418,7 +433,9 @@ HTML;
 	protected function rsaSign($data){
 		$privatekey = $this->getSignPrivateKey();
 		$result = openssl_sign($data, $signature, $privatekey);
-		if($result) return base64_encode($signature);
+		if($result) {
+			return base64_encode($signature);
+		}
 		return false;
 	}
 
@@ -426,7 +443,7 @@ HTML;
 	 * 签名证书私钥
 	 * @return resource
 	 */
-	protected function getSignPrivateKey(){
+	protected function getSignPrivateKey() {
 		$pkcs12 = file_get_contents($this->config['signCertPath']);
 		openssl_pkcs12_read($pkcs12, $certs, $this->config['signCertPwd']);
 		return $certs['pkey'];
@@ -455,13 +472,13 @@ HTML;
 					throw new \Exception('Verify Error:'.openssl_error_string());
 				}
 				return $result;
-			}elseif($params['version'] == '5.1.0'){
+			} elseif($params['version'] == '5.1.0'){
 				$signPubKeyCert = $params['signPubKeyCert'];
 				$cert = $this->verifyAndGetVerifyCert($signPubKeyCert);
 
 				if($cert == null){
 					return false;
-				}else{
+				} else{
 					$verifySha256 = hash('sha256', $verifyStr);
 					$signature = base64_decode($signaturebase64);
 					$result = openssl_verify ( $verifySha256, $signature,$cert, "sha256" );
@@ -470,8 +487,10 @@ HTML;
 					}
 					return $result;
 				}
-			}else throw new \Exception("Unsupported version {$params['version']}");
-		}else{
+			} else {
+				throw new \Exception("Unsupported version {$params['version']}");
+			}
+		} else{
 			return $this->validateBySecureKey($params,$this->config['secureKey']);
 		}
 	}
@@ -498,7 +517,7 @@ HTML;
 			if("中国银联股份有限公司" != $cn){
 				return null;
 			}
-		}elseif("中国银联股份有限公司" != $cn && "00040000:SIGN" != $cn){
+		} elseif("中国银联股份有限公司" != $cn && "00040000:SIGN" != $cn){
 			return null;
 		}
 
@@ -516,21 +535,21 @@ HTML;
 				$this->config['verifyMiddleCertPath']
 			)
 		);
-		if($result === FALSE){
+		if ($result === FALSE) {
 			return null;
-		} else if($result === TRUE){
+		}else if ($result === TRUE) {
 			UnionPay::$verifyCerts510[$certBase64String] = $certBase64String;
 			return UnionPay::$verifyCerts510[$certBase64String];
-		} else {
+		}else {
 			throw new \Exception("validate signPubKeyCert by rootCert failed with error");
 		}
 	}
 
-	protected function getIdentitiesFromCertficate($certInfo){
+	protected function getIdentitiesFromCertficate($certInfo) {
 		$cn = $certInfo['subject'];
 		$cn = $cn['CN'];
-		$company = explode('@',$cn);
-		if(count($company) < 3) {
+		$company = explode('@', $cn);
+		if (count($company) < 3) {
 			return null;
 		}
 		return $company[2];
@@ -542,8 +561,8 @@ HTML;
 	 * @throws \Exception
 	 * @return string
 	 */
-	protected function getVerifyPublicKey($certId){
-		if(isset(self::$verifyPublicKeys[$certId])){
+	protected function getVerifyPublicKey($certId) {
+		if (isset(self::$verifyPublicKeys[$certId])) {
 			return self::$verifyPublicKeys[$certId];
 		}
 		$pubkeys = $this->getVerifyPublicKeyByCerts([
@@ -552,7 +571,9 @@ HTML;
 			$this->config['verifyMiddleCertPath'],
 			$this->config['encryptCertPath'],
 		]);
-		if(!isset($pubkeys[$certId])) throw new \Exception("Public key not found with certificate id ($certId), existing ones " . implode(',',array_keys($pubkeys)));
+		if(!isset($pubkeys[$certId])) {
+			throw new \Exception("Public key not found with certificate id ($certId), existing ones " . implode(',',array_keys($pubkeys)));
+		}
 		return $pubkeys[$certId];
 	}
 
@@ -575,14 +596,14 @@ HTML;
 		unset($verifyArr['signature']);
 		ksort($verifyArr);
 		$verifyStr = $this->arrayToString($verifyArr);
-		if($params['signMethod']== UnionPay::SIGNMETHOD_SHA256) {
+		if ($params['signMethod'] == UnionPay::SIGNMETHOD_SHA256) {
 			$sha256secureKey = hash('sha256', $secureKey);
-			$params_before_sha256 = $verifyStr.'&'.$sha256secureKey;
-			$params_after_sha256 = hash('sha256',$params_before_sha256);
+			$params_before_sha256 = $verifyStr . '&' . $sha256secureKey;
+			$params_after_sha256 = hash('sha256', $params_before_sha256);
 			return $params_after_sha256 == $signature;
-		} else if($params['signMethod']== UnionPay::SIGNMETHOD_SM3) {
+		}else if ($params['signMethod'] == UnionPay::SIGNMETHOD_SM3) {
 			throw new \Exception("Unsupported signmethod - {$params['signMethod']}");
-		} else {
+		}else {
 			return false;
 		}
 	}
@@ -595,15 +616,15 @@ HTML;
 	 */
 	public function encryptData($data) {
 		$cert_path = $this->config['encryptCertPath'];
-		$public_key = file_get_contents ( $cert_path );
-		if($public_key === false ){
+		$public_key = file_get_contents($cert_path);
+		if ($public_key === false) {
 			throw new Exception('Fail reading encrypt certificate');
 		}
-		if(!openssl_x509_read ( $public_key )){
-			throw new Exception( " openssl_x509_read fail。");
+		if (!openssl_x509_read($public_key)) {
+			throw new Exception(" openssl_x509_read fail。");
 		}
-		openssl_public_encrypt ( $data, $crypted, $public_key );
-		return base64_encode ( $crypted );
+		openssl_public_encrypt($data, $crypted, $public_key);
+		return base64_encode($crypted);
 	}
 
 	/**
@@ -633,8 +654,9 @@ HTML;
 	}
 
 	protected function getCustomerInfo($customerInfo) {
-		if($customerInfo == null || count($customerInfo) == 0 )
-			return "";
+		if($customerInfo == null || count($customerInfo) == 0 ) {
+					return "";
+		}
 		return base64_encode ( "{" . $this->arrayToString( $customerInfo, false ) . "}" );
 	}
 
@@ -644,8 +666,9 @@ HTML;
 	 * @return string
 	 */
 	protected function encryptCustomerInfo($customerInfo) {
-		if($customerInfo == null || count($customerInfo) == 0 )
-			return "";
+		if($customerInfo == null || count($customerInfo) == 0 ) {
+					return "";
+		}
 		$sensitive = ['phoneNo','cvn2','expired'];//'certifTp' certifId ??
 		$sensitiveInfo = array();
 		foreach ( $customerInfo as $key => $value ) {
@@ -684,10 +707,10 @@ HTML;
 			if($callback && is_callable($callback)){
 				$queryId = $notifyData['queryId'];
 				return call_user_func_array( $callback , [$notifyData] );
-			}else{
+			} else{
 				print('ok');
 			}
-		}else{
+		} else{
 			throw new \Exception('Invalid paid notify data');
 		}
 	}
@@ -703,10 +726,10 @@ HTML;
 		if($this->validateSign($notifyData)){
 			if($callback && is_callable($callback)){
 				return call_user_func_array( $callback , [$notifyData] );
-			}else{
+			} else{
 				print('ok');
 			}
-		}else{
+		} else{
 			throw new \Exception('Invalid refund notify data');
 		}
 	}
@@ -723,10 +746,10 @@ HTML;
 			if($callback && is_callable($callback)){
 				$queryId = $notifyData['queryId'];
 				return call_user_func_array( $callback , [$notifyData] );
-			}else{
+			} else{
 				print('ok');
 			}
-		}else{
+		} else{
 			throw new \Exception('Invalid paid notify data');
 		}
 	}
@@ -737,7 +760,7 @@ HTML;
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function updatePublicKey($orderId,$ext = []){
+	public function updatePublicKey($orderId, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -752,10 +775,10 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'certType' => '01',
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->backTransUrl);
+		$result = $this->post($params, $this->backTransUrl);
 		return $result;
 	}
 
@@ -766,7 +789,7 @@ HTML;
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$txnTime,$ext = []){
+	public function query($orderId, $txnTime, $ext = []) {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -779,10 +802,10 @@ HTML;
 			'merId' =>  $this->config['merId'],
 			'txnTime' => $txnTime
 		);
-		$params['certId'] =  $this->getSignCertId();
-		$params = array_merge($params,$ext);
+		$params['certId'] = $this->getSignCertId();
+		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->singleQueryUrl,false);
+		$result = $this->post($params, $this->singleQueryUrl, false);
 		return $result;
 	}
 
@@ -792,7 +815,7 @@ HTML;
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
+	public function fileDownload($settleDate, $fileType = '00') {
 		$params = array(
 			'version' => $this->config['version'],
 			'encoding' => $this->config['encoding'],
@@ -802,13 +825,13 @@ HTML;
 			'bizType' => '000000',
 			'accessType' => '0',
 			'merId' =>  $this->config['merId'],
-			'settleDate' => $settleDate,//'0119', MMDD
+			'settleDate' => $settleDate, //'0119', MMDD
 			'txnTime' => date('YmdHis'),
 			'fileType' => $fileType,
 		);
-		$params['certId'] =  $this->getSignCertId();
+		$params['certId'] = $this->getSignCertId();
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params,$this->fileDownloadUrl,false);
+		$result = $this->post($params, $this->fileDownloadUrl, false);
 		return $result;
 	}
 

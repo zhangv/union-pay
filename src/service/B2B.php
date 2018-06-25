@@ -17,9 +17,9 @@ class B2B extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId,$txnAmt,$ext = []){
+	public function pay($orderId, $txnAmt, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_B2B;
-		$result = parent::pay($orderId,$txnAmt,$ext);
+		$result = parent::pay($orderId, $txnAmt, $ext);
 		return $result;
 	}
 
@@ -32,8 +32,8 @@ class B2B extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function refund($orderId,$origQryId,$refundAmt,$ext = []){
-		$result = parent::refund($orderId,$origQryId,$refundAmt,$ext);
+	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
+		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
 		return $result;
 	}
 
@@ -44,8 +44,8 @@ class B2B extends B2C {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function query($orderId,$txnTime,$ext = []){
-		return parent::query($orderId,$txnTime,$ext);
+	public function query($orderId, $txnTime, $ext = []) {
+		return parent::query($orderId, $txnTime, $ext);
 	}
 
 	/**
@@ -54,8 +54,8 @@ class B2B extends B2C {
 	 * @param string $fileType
 	 * @return mixed
 	 */
-	public function fileDownload($settleDate,$fileType = '00'){
-		return parent::fileDownload($settleDate,$fileType);
+	public function fileDownload($settleDate, $fileType = '00') {
+		return parent::fileDownload($settleDate, $fileType);
 	}
 
 }

@@ -14,16 +14,16 @@ return ['test',
 		'notifyUrl' => 'http://dev.git.com/union-pay/demo/paynotify.php', //后台通知
 		'frontFailUrl'   => 'http://dev.git.com/union-pay/demo/payfail.php',
 		'refundnotifyUrl' => 'http://dev.git.com.com/union-pay/demo/refundnotify.php',
-		'signCertPath' => dirname(__FILE__).'/../cert/acp_test_sign.pfx',
+		'signCertPath' => dirname(__FILE__) . '/../cert/acp_test_sign.pfx',
 		'signCertPwd' => '000000', //签名证书密码
-		'verifyCertPath' => dirname(__FILE__).'/../cert/acp_test_verify_sign.cer',  //v5.0.0 required NOTE:该测试环境证书已失效，推荐使用5.1.0
-		'verifyRootCertPath' => dirname(__FILE__).'/../cert/acp_test_root.cer', //v5.1.0 required
-		'verifyMiddleCertPath' => dirname(__FILE__).'/../cert/acp_test_middle.cer', //v5.1.0 required
-		'encryptCertPath' => dirname(__FILE__).'/../cert/acp_test_enc.cer',
+		'verifyCertPath' => dirname(__FILE__) . '/../cert/acp_test_verify_sign.cer', //v5.0.0 required NOTE:该测试环境证书已失效，推荐使用5.1.0
+		'verifyRootCertPath' => dirname(__FILE__) . '/../cert/acp_test_root.cer', //v5.1.0 required
+		'verifyMiddleCertPath' => dirname(__FILE__) . '/../cert/acp_test_middle.cer', //v5.1.0 required
+		'encryptCertPath' => dirname(__FILE__) . '/../cert/acp_test_enc.cer',
 		'ifValidateCNName' => false, //正式环境设置为true
 		//以下无跳转
-		'openReturnUrl' => 'http://dev.git.com/union-pay/demo/openreturn.php',//前台开通返回
-		'openNotifyUrl' => 'http://dev.git.com/union-pay/demo/opennotify.php',//前台开通通知
+		'openReturnUrl' => 'http://dev.git.com/union-pay/demo/openreturn.php', //前台开通返回
+		'openNotifyUrl' => 'http://dev.git.com/union-pay/demo/opennotify.php', //前台开通通知
 		'testAcc' => [
 			/**
 			 * 网关、WAP短信验证码 111111 控件短信验证码 123456
