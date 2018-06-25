@@ -7,7 +7,10 @@ use zhangv\unionpay\UnionPay;
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
- * */
+ * @method mixed updatePublicKey($orderId, $ext = [])
+ * @method mixed query($orderId, $txnTime, $ext = [])
+ * @method mixed fileDownload($settleDate, $fileType)
+ */
 class B2C extends UnionPay {
 
 	/**
@@ -18,26 +21,21 @@ class B2C extends UnionPay {
 	 * @return string
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_B2C,
-			'channelType' => '07',
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
 			'defaultPayType' => '0001', //默认支付方式
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'frontUrl' =>  $this->config['returnUrl'],
+			'txnAmt' => $txnAmt,
+			'txnTime' => date('YmdHis'),
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -51,47 +49,22 @@ class B2C extends UnionPay {
 	 * @return mixed
 	 */
 	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'txnTime' => date('YmdHis'),
-			'backUrl' => $this->config['notifyUrl'],
-			'txnAmt' => $txnAmt,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
 			'txnSubType' => '00',
-			'accessType' => '0',
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'channelType' => '07',
-			'merId' => $this->config['merId'],
+			'bizType' => UnionPay::BIZTYPE_B2C,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
-	}
+			'txnAmt' => $txnAmt,
+			'txnTime' => date('YmdHis'),
+		],$ext);
 
-	/**
-	 * 消费撤销异步通知处理
-	 * @param array $notifyData
-	 * @param callable $callback
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function onPayUndoNotify($notifyData, callable $callback) {
-		if ($this->validateSign($notifyData)) {
-			if ($callback && is_callable($callback)) {
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array($callback, [$notifyData]);
-			}else {
-				print('ok');
-			}
-		}else {
-			throw new \Exception('Invalid paid notify data');
-		}
+		$params['signature'] = $this->sign($params);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -103,27 +76,21 @@ class B2C extends UnionPay {
 	 * @return mixed
 	 */
 	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => '0',
-			'channelType' => '07',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
 			'orderId' => $orderId,
-			'merId' => $this->config['merId'],
 			'origQryId' => $origQryId,
-			'txnTime' => date('YmdHis'),
 			'txnAmt' => $refundAmt,
-			'backUrl' => $this->config['returnUrl'],
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'txnTime' => date('YmdHis'),
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -135,29 +102,23 @@ class B2C extends UnionPay {
 	 * @return mixed
 	 */
 	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_B2C,
-			'frontUrl' =>  $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'channelType' => '07',
-			'accessType' => '0',
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
+			'frontUrl' =>  $this->config['returnUrl'],
 			'txnAmt' => $amt,
-			'currencyCode' => '156',
+			'txnTime' => date('YmdHis'),
 			'orderDesc' => $orderDesc,
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params, '预授权');
-		return $result;
+		return $this->createPostForm($params, '预授权');
 	}
 
 	/**
@@ -169,27 +130,22 @@ class B2C extends UnionPay {
 	 * @return array
 	 */
 	public function preAuthUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHUNDO,
 			'txnSubType' => '00',
 			'bizType' => '000000',
-			'accessType' => '0',
-			'channelType' => '07',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
-		 	'merId' =>  $this->config['merId'],
 			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
-			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt, //交易金额，需和原预授权一致
-			'backUrl' => $this->config['notifyUrl'],
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'txnTime' => date('YmdHis'),
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -201,27 +157,21 @@ class B2C extends UnionPay {
 	 * @return array
 	 */
 	public function preAuthFinish($orderId, $origQryId, $amt, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISH,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => '0',
-			'channelType' => '07',
-			'orderId' => $orderId, //商户订单号，重新产生，不同于原消费
-			'merId' =>  $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
+			'orderId' => $orderId,
 			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
+			'txnAmt' => $amt, //交易金额，需和原预授权一致
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $amt,
-			'backUrl' => $this->config['notifyUrl'],
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -233,27 +183,21 @@ class B2C extends UnionPay {
 	 * @return array
 	 */
 	public function preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISHUNDO,
 			'txnSubType' => '00',
 			'bizType' => '000000',
-			'accessType' => '0',
-			'channelType' => '07',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
 			'orderId' => $orderId,
-			'merId' => $this->config['merId'],
-			'origQryId' => $origQryId,
+			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
+			'txnAmt' => $txnAmt, //交易金额，需和原预授权一致
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'backUrl' => $this->config['notifyUrl'],
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 }

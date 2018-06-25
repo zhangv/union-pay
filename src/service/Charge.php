@@ -105,7 +105,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -145,7 +145,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfAppTransUrl);
+		return $this->post($this->jfAppTransUrl, $params);
 	}
 
 	/**
@@ -190,7 +190,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -276,7 +276,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -315,7 +315,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfAppTransUrl);
+		return $this->post($this->jfAppTransUrl, $params);
 	}
 
 	/**
@@ -360,7 +360,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -443,7 +443,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -481,7 +481,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfAppTransUrl);
+		return $this->post($this->jfAppTransUrl, $params);
 	}
 
 	/**
@@ -516,7 +516,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfBackTransUrl);
+		return $this->post($this->jfBackTransUrl, $params);
 	}
 
 	/**
@@ -543,7 +543,7 @@ class Charge extends UnionPay {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->jfSingleQueryUrl);
+		return $this->post($this->jfSingleQueryUrl, $params);
 	}
 
 	/**
@@ -552,7 +552,7 @@ class Charge extends UnionPay {
 	 */
 	public function areas() {
 		$url = "https://gateway.95516.com/jiaofei/config/s/areas";
-		return $this->get([], $url);
+		return $this->get($url);
 	}
 
 	/**
@@ -561,7 +561,7 @@ class Charge extends UnionPay {
 	 */
 	public function categories($category) {
 		$url = "https://gateway.95516.com/jiaofei/config/s/categories/{$category}";
-		return $this->get([], $url);
+		return $this->get($url);
 	}
 
 	/**
@@ -570,7 +570,7 @@ class Charge extends UnionPay {
 	 */
 	public function biz($bussCode) {
 		$url = "https://gateway.95516.com/jiaofei/config/s/biz/{$bussCode}";
-		return $this->get([], $url);
+		return $this->get($url);
 	}
 
 }

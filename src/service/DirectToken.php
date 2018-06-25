@@ -36,8 +36,7 @@ class DirectToken extends Direct {
 		$params['tokenPayData'] = $tokenPayData;
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -122,8 +121,7 @@ class DirectToken extends Direct {
 		$params['txnTime'] = $txnTime;
 		$params['tokenPayData'] = $tokenPayData;
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -154,8 +152,7 @@ class DirectToken extends Direct {
 		$params['tokenPayData'] = $tokenPayData;
 
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -204,8 +201,7 @@ class DirectToken extends Direct {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($ext, $params);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
-		return $result;
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**

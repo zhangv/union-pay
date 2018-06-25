@@ -38,7 +38,7 @@ class App extends B2C {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->appTransUrl);
+		return $this->post($this->appTransUrl,$params);
 	}
 
 	/**
@@ -118,8 +118,7 @@ class App extends B2C {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->appTransUrl);
-		return $result;
+		return $this->post($this->appTransUrl,$params);
 	}
 
 	/**

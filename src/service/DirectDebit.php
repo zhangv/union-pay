@@ -8,7 +8,9 @@ use \Exception;
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=68
- * */
+ * @method mixed query($orderId, $txnTime, $ext = [])
+ * @method mixed fileDownload($settleDate, $fileType)
+ */
 class DirectDebit extends B2C {
 
 	/**
@@ -20,26 +22,20 @@ class DirectDebit extends B2C {
 	 * @return string
 	 */
 	public function authorize($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '11',
-			'bizType' => '000501',
-			'channelType' => '07',
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
 			'orderId' => $orderId,
+			'frontUrl' => $this->config['returnUrl'],
+			'accNo' => $accNo,
+			'customerInfo' => $this->getCustomerInfo($customerInfo),
 			'txnTime' => date('YmdHis'),
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $accNo;
-		$params['customerInfo'] = $this->getCustomerInfo($customerInfo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -53,26 +49,21 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function backAuthorize($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '11',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
 			'txnTime' => date('YmdHis'),
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -83,25 +74,21 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function unauthorize($orderId, $accNo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_UNAUTHORIZE,
 			'txnSubType' => '04',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			//交易参数
 			'orderId' => $orderId,
+			'frontUrl' => $this->config['returnUrl'],
+			'accNo' => $this->encryptData($accNo),
 			'txnTime' => date('YmdHis'),
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -112,26 +99,20 @@ class DirectDebit extends B2C {
 	 * @return string
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'frontUrl' => $this->config['returnUrl'],
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -145,26 +126,20 @@ class DirectDebit extends B2C {
 	 * @return string
 	 */
 	public function payByBindId($orderId, $txnAmt, $bindId, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => '11',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
+			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'channelType' => '07',
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
 			'bindId' => $bindId,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params);
 	}
@@ -196,17 +171,6 @@ class DirectDebit extends B2C {
 	}
 
 	/**
-	 * 交易状态查询
-	 * @param string $orderId
-	 * @param string $txnTime
-	 * @param array $ext
-	 * @return mixed
-	 */
-	public function query($orderId, $txnTime, $ext = []) {
-		return parent::query($orderId, $txnTime, $ext);
-	}
-
-	/**
 	 * 后台绑定
 	 * @param $orderId
 	 * @param $accNo
@@ -216,28 +180,23 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function backBind($orderId, $accNo, $customerInfo, $bindId, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'bindId' => $bindId,
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['bindId'] = $bindId;
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -250,28 +209,22 @@ class DirectDebit extends B2C {
 	 * @return string
 	 */
 	public function frontBind($orderId, $accNo, $customerInfo, $bindId, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'bindId' => $bindId,
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['bindId'] = $bindId;
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'frontUrl' => $this->config['returnUrl'],
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params, '绑定');
 	}
@@ -284,26 +237,22 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function queryBind($orderId, $bindId, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_QUERYBIND,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'bindId' => $bindId,
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['bindId'] = $bindId;
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'frontUrl' => $this->config['returnUrl'],
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -314,26 +263,21 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function removeBind($orderId, $bindId, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => '74',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
+			'txnType' => UnionPay::TXNTYPE_UNAUTHORIZE,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'bindId' => $bindId,
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['bindId'] = $bindId;
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -345,27 +289,22 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function backAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -377,26 +316,21 @@ class DirectDebit extends B2C {
 	 * @return string
 	 */
 	public function frontAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '10',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
 			'reserved' =>'{checkFlag=11100}'
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->createPostForm($params, '认证');
 	}
@@ -410,26 +344,22 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function smsAuthenticate($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHENTICATE,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'channelType' => '07',
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-		];
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -447,28 +377,24 @@ class DirectDebit extends B2C {
 		if (!file_exists($filePath)) {
 			throw new Exception("File path does not exists - $filePath");
 		}
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_BATCHDEBIT,
 			'txnSubType' => '02',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'channelType' => '07',
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' => $this->config['currencyCode'],
+			//交易参数
 			'orderId' => $orderId,
+			'batchNo' => $batchNo,
+			'totalQty' => $totalQty,
+			'totalAmt' => $totalAmt,
+			'fileContent' => $this->encodeFileContent($filePath),
 			'txnTime' => date('YmdHis'),
-			'currencyCode' => '156',
-		];
-		$params['batchNo'] = $batchNo;
-		$params['totalQty'] = $totalQty;
-		$params['totalAmt'] = $totalAmt;
-		$params['fileContent'] = $this->encodeFileContent($filePath);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->batchTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -479,33 +405,19 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	public function queryBatch($batchNo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_QUERYBATCHDEBIT,
 			'txnSubType' => '02',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'channelType' => '07',
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
+			'batchNo' => $batchNo,
 			'txnTime' => date('YmdHis'),
-		];
-		$params['batchNo'] = $batchNo;
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->batchTransUrl);
-	}
-
-	/**
-	 * 文件传输
-	 * @param string $settleDate MMDD
-	 * @param string $fileType
-	 * @return mixed
-	 */
-	public function fileDownload($settleDate, $fileType = '00') {
-		return parent::fileDownload($settleDate, $fileType);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 }

@@ -99,19 +99,22 @@ class UnionPay {
 		]
 	];
 
-	protected $frontTransUrl = "https://gateway.95516.com/gateway/api/frontTransReq.do";
-	protected $backTransUrl = "https://gateway.95516.com/gateway/api/backTransReq.do";
-	protected $batchTransUrl = "https://gateway.95516.com/gateway/api/batchTrans.do";
-	protected $singleQueryUrl = "https://gateway.95516.com/gateway/api/queryTrans.do";
-	protected $fileDownloadUrl = "https://filedownload.95516.com/";
-	protected $cardTransUrl = "https://gateway.95516.com/gateway/api/cardTransReq.do";
-	protected $appTransUrl = "https://gateway.95516.com/gateway/api/appTransReq.do";
+	protected $apiEndpoint = "https://gateway.95516.com/";
 
-	protected $jfFrontTransUrl = "https://gateway.95516.com/jiaofei/api/frontTransReq.do";
-	protected $jfBackTransUrl = "https://gateway.95516.com/jiaofei/api/backTransReq.do";
-	protected $jfSingleQueryUrl = "https://gateway.95516.com/jiaofei/api/queryTrans.do";
-	protected $jfCardTransUrl = "https://gateway.95516.com/jiaofei/api/cardTransReq.do";
-	protected $jfAppTransUrl = "https://gateway.95516.com/jiaofei/api/appTransReq.do";
+	protected $frontTransUrl = "gateway/api/frontTransReq.do";
+	protected $backTransUrl = "gateway/api/backTransReq.do";
+	protected $batchTransUrl = "gateway/api/batchTrans.do";
+	protected $singleQueryUrl = "gateway/api/queryTrans.do";
+	protected $cardTransUrl = "gateway/api/cardTransReq.do";
+	protected $appTransUrl = "gateway/api/appTransReq.do";
+
+	protected $jfFrontTransUrl = "jiaofei/api/frontTransReq.do";
+	protected $jfBackTransUrl = "jiaofei/api/backTransReq.do";
+	protected $jfSingleQueryUrl = "jiaofei/api/queryTrans.do";
+	protected $jfCardTransUrl = "jiaofei/api/cardTransReq.do";
+	protected $jfAppTransUrl = "jiaofei/api/appTransReq.do";
+
+	protected $fileDownloadUrl = "https://filedownload.95516.com/";
 
 	public $response;
 	public $responseArray;
@@ -154,10 +157,7 @@ HTML;
 		$this->mode = $mode;
 		$this->httpClient = new HttpClient(3);
 		if ($mode == UnionPay::MODE_TEST) {
-			$this->frontTransUrl = 'https://gateway.test.95516.com/gateway/api/frontTransReq.do';
-			$this->backTransUrl = 'https://gateway.test.95516.com/gateway/api/backTransReq.do';
-			$this->appTransUrl = "https://gateway.test.95516.com/gateway/api/appTransReq.do";
-			$this->singleQueryUrl = 'https://gateway.test.95516.com/gateway/api/queryTrans.do';
+			$this->apiEndpoint = 'https://gateway.test.95516.com/';
 			$this->fileDownloadUrl = 'https://filedownload.test.95516.com/';
 		}
 	}
@@ -188,13 +188,13 @@ HTML;
 	}
 
 	/**
-	 * @param array $params
 	 * @param string $url
+	 * @param array $params
 	 * @param bool $validateResp
 	 * @return array
 	 * @throws \Exception
 	 */
-	protected function post($params, $url, $validateResp = true) {
+	protected function post($url, $params, $validateResp = true) {
 		$postbody = $this->getRequestParamString($params);
 		$headers = array('Content-type:application/x-www-form-urlencoded;charset=UTF-8');
 		$opts = array(
@@ -203,6 +203,8 @@ HTML;
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSLVERSION => 1
 		);
+		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
+
 		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
 		if (!$this->response || $this->response == '') {
 			throw new Exception("No response from remote host");
@@ -225,7 +227,7 @@ HTML;
 		}
 	}
 
-	protected function get($params, $url) {
+	protected function get($url,$params = []) {
 		return $this->httpClient->get($url, $params);
 	}
 
@@ -281,9 +283,9 @@ HTML;
 				return false;
 			}
 			if ($needUrlDecode) {
-							$result [$key] = urldecode($temp);
+				$result [$key] = urldecode($temp);
 			}else {
-							$result [$key] = $temp;
+				$result [$key] = $temp;
 			}
 		}
 	}
@@ -373,7 +375,7 @@ HTML;
 	 * @throws \Exception
 	 * @return string|bool
 	 */
-	protected function sign($params, $signMethod = UnionPay::SIGNMETHOD_RSA) {
+	public function sign($params, $signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
 		if (empty($signData['certId'])) {
 			$signData['certId'] = $this->getSignCertId();
@@ -699,19 +701,16 @@ HTML;
 	 * 支付异步通知处理
 	 * @param array $notifyData
 	 * @param callable $callback
+	 * @param bool $validate
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayNotify($notifyData, callable $callback) {
-		if ($this->validateSign($notifyData)) {
-			if ($callback && is_callable($callback)) {
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array($callback, [$notifyData]);
-			}else {
-				print('ok');
-			}
+	public function onPayNotify($notifyData, $callback, bool $validate = true) {
+		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid paid notify data');
+		if (is_callable($callback)) {
+			return call_user_func_array($callback, [$notifyData]);
 		}else {
-			throw new \Exception('Invalid paid notify data');
+			throw new Exception("The callback($callback) must be callable.");
 		}
 	}
 
@@ -719,18 +718,16 @@ HTML;
 	 * 退款异步通知处理
 	 * @param array $notifyData
 	 * @param callable $callback
+	 * @param bool $validate
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onRefundNotify($notifyData, callable $callback) {
-		if ($this->validateSign($notifyData)) {
-			if ($callback && is_callable($callback)) {
-				return call_user_func_array($callback, [$notifyData]);
-			}else {
-				print('ok');
-			}
+	public function onRefundNotify($notifyData, $callback, bool $validate = true) {
+		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid refund notify data');
+		if (is_callable($callback)) {
+			return call_user_func_array($callback, [$notifyData]);
 		}else {
-			throw new \Exception('Invalid refund notify data');
+			throw new Exception("The callback($callback) must be callable.");
 		}
 	}
 
@@ -738,19 +735,16 @@ HTML;
 	 * 消费撤销异步通知处理
 	 * @param array $notifyData
 	 * @param callable $callback
+	 * @param bool $validate
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayUndoNotify($notifyData, callable $callback) {
-		if ($this->validateSign($notifyData)) {
-			if ($callback && is_callable($callback)) {
-				$queryId = $notifyData['queryId'];
-				return call_user_func_array($callback, [$notifyData]);
-			}else {
-				print('ok');
-			}
+	public function onPayUndoNotify($notifyData, $callback, bool $validate = true) {
+		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid pay undo notify data');
+		if (is_callable($callback)) {
+			return call_user_func_array($callback, [$notifyData]);
 		}else {
-			throw new \Exception('Invalid paid notify data');
+			throw new Exception("The callback($callback) must be callable.");
 		}
 	}
 
@@ -761,24 +755,20 @@ HTML;
 	 * @return mixed
 	 */
 	public function updatePublicKey($orderId, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'bizType' => '000000',
-			'txnTime' => date('YmdHis'),
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = $this->commonParams();
+		$params = array_merge($params,[
 			'txnType' => UnionPay::TXNTYPE_UPDATEPUBLICKEY,
 			'txnSubType' => '00',
-			'accessType' => '0',
+			'bizType' => '000000',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => '07',
-			'orderId' => $orderId,
-			'merId' =>  $this->config['merId'],
 			'certType' => '01',
-		);
-		$params['certId'] = $this->getSignCertId();
+			'orderId' => $orderId,
+			'txnTime' => date('YmdHis'),
+		]);
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->backTransUrl);
+		$result = $this->post($this->backTransUrl, $params);
 		return $result;
 	}
 
@@ -790,22 +780,18 @@ HTML;
 	 * @return mixed
 	 */
 	public function query($orderId, $txnTime, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => '00',
+		$params = $this->commonParams();
+		$params = array_merge($params,[
+			'txnType' => UnionPay::TXNTYPE_QUERY,
 			'txnSubType' => '00',
 			'bizType' => '000000',
-			'accessType' => '0',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'orderId' => $orderId,
-			'merId' =>  $this->config['merId'],
 			'txnTime' => $txnTime
-		);
-		$params['certId'] = $this->getSignCertId();
+		]);
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->singleQueryUrl, false);
+		$result = $this->post($this->singleQueryUrl, $params, false);
 		return $result;
 	}
 
@@ -816,23 +802,35 @@ HTML;
 	 * @return mixed
 	 */
 	public function fileDownload($settleDate, $fileType = '00') {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
+		$params = $this->commonParams();
+		$params = array_merge($params,[
 			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
 			'txnSubType' => '01',
 			'bizType' => '000000',
-			'accessType' => '0',
-			'merId' =>  $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'settleDate' => $settleDate, //'0119', MMDD
 			'txnTime' => date('YmdHis'),
 			'fileType' => $fileType,
-		);
-		$params['certId'] = $this->getSignCertId();
+		]);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($params, $this->fileDownloadUrl, false);
+		$result = $this->post($this->fileDownloadUrl, $params, false);
 		return $result;
+	}
+
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return array(
+			'version' => $this->config['version'],
+			'signMethod' =>  $this->config['signMethod'],
+			'encoding' => $this->config['encoding'],
+			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+			'backUrl' => $this->config['notifyUrl'],
+			'merId' => $this->config['merId'],
+			'certId' => $this->getSignCertId()
+		);
 	}
 
 }

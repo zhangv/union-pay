@@ -7,7 +7,9 @@ use zhangv\unionpay\UnionPay;
  * @license MIT
  * @author zhangv
  * @ref https://open.unionpay.com/ajweb/product/detail?id=66
- * */
+ * @method mixed query($orderId, $txnTime, $ext = [])
+ * @method mixed fileDownload($settleDate, $fileType)
+ */
 class Wap extends B2C {
 
 	/**
@@ -19,8 +21,7 @@ class Wap extends B2C {
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::pay($orderId, $txnAmt, $ext);
-		return $result;
+		return parent::pay($orderId, $txnAmt, $ext);
 	}
 
 	/**
@@ -33,8 +34,7 @@ class Wap extends B2C {
 	 */
 	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
-		return $result;
+		return parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -47,8 +47,7 @@ class Wap extends B2C {
 	 */
 	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
-		return $result;
+		return parent::refund($orderId, $origQryId, $refundAmt, $ext);
 	}
 
 }

@@ -1,8 +1,10 @@
 <?php
 
-return ['test', [
+return ['test',
+	[
 		'version' => '5.1.0',
 		'signMethod'=> '01', //RSA
+		'currencyCode' => '156',//交易币种，境内商户勿改
 		'encoding' => 'UTF-8',
 		'merId' => '700000000000001',
 		'returnUrl' => 'http://dev.git.com/union-pay/demo/payreturn.php', //前台网关支付返回

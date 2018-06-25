@@ -9,6 +9,7 @@ return ['test',
 		'version' => '5.1.0',
 		'signMethod'=> '01', //RSA
 		'encoding' => 'UTF-8',
+		'currencyCode' => '156',//交易币种，境内商户勿改
 		'merId' => '777290058158470', //注意这个测试商户号
 		'returnUrl' => 'http://dev.git.com/union-pay/demo/payreturn.php', //前台网关支付返回
 		'notifyUrl' => 'http://dev.git.com/union-pay/demo/paynotify.php', //后台通知

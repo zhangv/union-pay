@@ -60,7 +60,7 @@ class Qrcode extends B2C {
 		$params['certId'] = $this->getSignCertId();
 		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($params, $this->backTransUrl);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**

@@ -30,6 +30,55 @@ class B2CTest extends PHPUnit\Framework\TestCase{
 
 	/**
 	 * @test
+	 * @expectedException Exception
+	 */
+	public function payUndo(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->payUndo($orderId,1,1);
+	}
+
+	/**
+	 * @test
+	 * @expectedException Exception
+	 */
+	public function refund(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->refund($orderId,1,1);
+	}
+
+	/** @test */
+	public function preAuth(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->preAuth($orderId,1,'test');
+		$this->assertNotNull($f);
+	}
+
+	/** @test
+	 * @expectedException Exception
+	 */
+	public function preAuthUndo(){
+		$orderId = $this->genOutTradeNo();
+		$r = $this->unionPay->preAuthUndo($orderId,1,1);
+	}
+
+	/** @test
+	 * @expectedException Exception
+	 */
+	public function preAuthFinish(){
+		$orderId = $this->genOutTradeNo();
+		$r = $this->unionPay->preAuthFinish($orderId,1,1);
+	}
+
+	/** @test
+	 * @expectedException Exception
+	 */
+	public function preAuthFinishUndo(){
+		$orderId = $this->genOutTradeNo();
+		$r = $this->unionPay->preAuthFinishUndo($orderId,1,1);
+	}
+
+	/**
+	 * @test
 	 * @group tmp
 	 */
 	public function query(){
@@ -104,13 +153,6 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$this->unionPay->setHttpClient($mock);
 		$r = $this->unionPay->query(20180204092701,date('YmdHis'));
 		var_dump($r);
-	}
-
-	/** @test */
-	public function preAuth(){
-		$orderId = $this->genOutTradeNo();
-		$f = $this->unionPay->preAuth($orderId,1,'test');
-		$this->assertNotNull($f);
 	}
 
 	/** @test */
