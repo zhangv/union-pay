@@ -98,7 +98,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId, $txnAmt, $ext = []) {
+	public function debit($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
 		$params = array_merge($this->commonParams(),[
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
@@ -109,12 +109,13 @@ class DirectDebit extends B2C {
 			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
-			'frontUrl' => $this->config['returnUrl'],
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -125,7 +126,7 @@ class DirectDebit extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function payByBindId($orderId, $txnAmt, $bindId, $ext = []) {
+	public function debitByBindId($orderId, $txnAmt, $bindId, $ext = []) {
 		$params = array_merge($this->commonParams(),[
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
@@ -141,7 +142,7 @@ class DirectDebit extends B2C {
 			'bindId' => $bindId,
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
@@ -187,7 +188,6 @@ class DirectDebit extends B2C {
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -216,7 +216,6 @@ class DirectDebit extends B2C {
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -244,7 +243,6 @@ class DirectDebit extends B2C {
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'bindId' => $bindId,
@@ -270,7 +268,6 @@ class DirectDebit extends B2C {
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'bindId' => $bindId,
@@ -364,37 +361,38 @@ class DirectDebit extends B2C {
 
 	/**
 	 * 批量代收
-	 * @param string $orderId
 	 * @param string $batchNo
 	 * @param array $totalQty
 	 * @param array $totalAmt
-	 * @param string $filePath
+	 * @param string $file - Path or file content
 	 * @param array $ext
 	 * @throws Exception
 	 * @return array
 	 */
-	public function batchPay($orderId, $batchNo, $totalQty, $totalAmt, $filePath, $ext = []) {
-		if (!file_exists($filePath)) {
-			throw new Exception("File path does not exists - $filePath");
-		}
-		$params = array_merge($this->commonParams(),[
+	public function batchDebit($batchNo, $totalQty, $totalAmt, $file, $ext = []) {
+		$params = array_merge([
 			//基础参数
+			'version' => $this->config['version'],
+			'signMethod' =>  $this->config['signMethod'],
+			'encoding' => $this->config['encoding'],
+			'merId' => $this->config['merId'],
+			'certId' => $this->getSignCertId(),
+			'backUrl' => $this->config['notifyUrl'],
+
 			'txnType' => UnionPay::TXNTYPE_BATCHDEBIT,
 			'txnSubType' => '02',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
-			'orderId' => $orderId,
 			'batchNo' => $batchNo,
 			'totalQty' => $totalQty,
 			'totalAmt' => $totalAmt,
-			'fileContent' => $this->encodeFileContent($filePath),
+			'fileContent' => $this->encodeFileContent($file),
 			'txnTime' => date('YmdHis'),
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($this->backTransUrl, $params);
+		return $this->post($this->batchTransUrl, $params);
 	}
 
 	/**
@@ -404,9 +402,16 @@ class DirectDebit extends B2C {
 	 * @throws Exception
 	 * @return array
 	 */
-	public function queryBatch($batchNo, $ext = []) {
-		$params = array_merge($this->commonParams(),[
+	public function queryBatchDebit($batchNo, $ext = []) {
+		$params = array_merge([
 			//基础参数
+			'version' => $this->config['version'],
+			'signMethod' =>  $this->config['signMethod'],
+			'encoding' => $this->config['encoding'],
+			'merId' => $this->config['merId'],
+			'certId' => $this->getSignCertId(),
+//			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+//			'backUrl' => $this->config['notifyUrl'],
 			'txnType' => UnionPay::TXNTYPE_QUERYBATCHDEBIT,
 			'txnSubType' => '02',
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
@@ -417,7 +422,7 @@ class DirectDebit extends B2C {
 			'txnTime' => date('YmdHis'),
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->post($this->backTransUrl, $params);
+		return $this->post($this->batchTransUrl, $params);
 	}
 
 }

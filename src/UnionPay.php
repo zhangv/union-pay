@@ -206,6 +206,7 @@ HTML;
 		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
 
 		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
+
 		if (!$this->response || $this->response == '') {
 			throw new Exception("No response from remote host");
 		}
@@ -215,7 +216,7 @@ HTML;
 		}
 
 		$this->respCode = $this->responseArray['respCode'];
-		$this->respMsg = $this->responseArray['respMsg'];
+		$this->respMsg = (!empty($this->responseArray['respMsg']))?$this->responseArray['respMsg']:null;
 		if ($this->respCode == UnionPay::RESPCODE_SUCCESS) {
 			if ($validateResp === true && !$this->validateSign($this->responseArray)) {
 				throw new \Exception("Signature verification failed, response: {$this->response}");
@@ -223,7 +224,7 @@ HTML;
 				return $this->responseArray;
 			}
 		}else {
-			throw new \Exception($this->respMsg . ' - request:' . $postbody . ', response:' . $this->response);
+			throw new \Exception("[{$this->respCode}]{$this->respMsg} - request: $postbody , response: {$this->response}");
 		}
 	}
 
@@ -363,7 +364,7 @@ HTML;
 			$input .= "\t\t<input type=\"hidden\" name=\"{$key}\" value=\"{$item}\">\n";
 		}
 		if (!$url) {
-			$url = $this->frontTransUrl;
+			$url = $this->apiEndpoint . $this->frontTransUrl;
 		}
 		return sprintf($this->formTemplate, $title, $url, $input);
 	}
@@ -483,7 +484,7 @@ HTML;
 				}else {
 					$verifySha256 = hash('sha256', $verifyStr);
 					$signature = base64_decode($signaturebase64);
-					$result = openssl_verify($verifySha256, $signature, $cert, "sha256");
+					$result = openssl_verify($verifySha256, $signature, $cert, OPENSSL_ALGO_SHA256);
 					if ($result === -1) {
 						throw new \Exception('Verify Error:' . openssl_error_string());
 					}
@@ -687,8 +688,10 @@ HTML;
 		return base64_encode("{" . $this->arrayToString($customerInfo) . "}");
 	}
 
-	protected function encodeFileContent($path) {
-		$file_content = file_get_contents($path);
+	protected function encodeFileContent($file) {
+		if(file_exists($file)){
+			$file_content = file_get_contents($file);
+		}else $file_content = $file;
 		//UTF8 去掉文本中的 bom头
 		$BOM = chr(239) . chr(187) . chr(191);
 		$file_content = str_replace($BOM, '', $file_content);
