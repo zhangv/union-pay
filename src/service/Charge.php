@@ -282,7 +282,6 @@ class Charge extends UnionPay {
 	/**
 	 * 申报
 	 * @param string    $orderId
-	 * @param int       $txnAmt
 	 * @param string    $usr_num 纳税人识别号
 	 * @param string    $col_organ_cd 征收机关代码
 	 * @param string    $col_voucher_no 应征凭证序号
@@ -290,14 +289,14 @@ class Charge extends UnionPay {
 	 * @param array     $ext
 	 * @return array
 	 */
-	public function queryTax($orderId, $txnAmt, $usr_num, $col_organ_cd, $col_voucher_no, $proc_flg, $ext = []) {
+	public function queryTax($orderId, $usr_num, $col_organ_cd, $col_voucher_no, $proc_flg, $ext = []) {
 		$billQueryInfo = [
 			"usr_num" => $usr_num,
 			"col_organ_cd" => $col_organ_cd,
 			"col_voucher_no" => $col_voucher_no,
 			"proc_flg" => $proc_flg,
 		];
-		return $this->queryBill($orderId,$txnAmt,'S0_9800_0000', json_encode($billQueryInfo,JSON_UNESCAPED_UNICODE), $ext);
+		return $this->queryBill($orderId,'S0_9800_0000', json_encode($billQueryInfo), $ext);
 	}
 
 	/**
