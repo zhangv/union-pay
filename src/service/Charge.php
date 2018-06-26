@@ -11,13 +11,6 @@ class Charge extends UnionPay {
 
 	public function __construct($config, $mode = UnionPay::MODE_PROD) {
 		parent::__construct($config, $mode);
-		if ($mode == UnionPay::MODE_TEST) {
-			$this->jfFrontTransUrl = 'https://gateway.test.95516.com/jiaofei/api/frontTransReq.do';
-			$this->jfBackTransUrl = 'https://gateway.test.95516.com/jiaofei/api/backTransReq.do';
-			$this->jfCardTransUrl = "https://gateway.95516.com/jiaofei/api/cardTransReq.do";
-			$this->jfAppTransUrl = "https://gateway.test.95516.com/jiaofei/api/appTransReq.do";
-			$this->jfSingleQueryUrl = 'https://gateway.test.95516.com/jiaofei/api/queryTrans.do';
-		}
 	}
 
 	/**
@@ -30,36 +23,30 @@ class Charge extends UnionPay {
 	 * @return string
 	 */
 	public function frontPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_CHARGE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
+			'currencyCode' => $this->config['currencyCode'],
+			'bussCode' => $bussCode,// 业务类型号，此处默认取demo演示页面传递的参数
+			'payTimeout' => date('YmdHis', strtotime('+15 minutes'))
+		],$ext);
+		if($billQueryInfo){
+			$params['billQueryInfo'] = base64_encode($billQueryInfo);// 账单要素，JSON格式
 		}
 		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
+			$params ['origQryId'] = $ext ["origQryId"];
+		}
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '银联账单缴费', $this->jfFrontTransUrl);
+		return $this->createPostForm($params, '银联缴费', $this->jfFrontTransUrl);
 	}
 
 	/**
@@ -74,36 +61,30 @@ class Charge extends UnionPay {
 	 * @return array
 	 */
 	public function backPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_CHARGE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
+			'currencyCode' => $this->config['currencyCode'],
+			'bussCode' => $bussCode,// 业务类型号，此处默认取demo演示页面传递的参数
+			'payTimeout' => date('YmdHis', strtotime('+15 minutes')),
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo)
+		],$ext);
+		if($billQueryInfo){
+			$params['billQueryInfo'] = base64_encode($billQueryInfo);// 账单要素，JSON格式
 		}
+
 		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
+			$params ['origQryId'] = $ext ["origQryId"];
+		}
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->jfBackTransUrl, $params);
 	}
@@ -118,32 +99,28 @@ class Charge extends UnionPay {
 	 * @return array
 	 */
 	public function appPayBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_CHARGE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
+			'currencyCode' => $this->config['currencyCode'],
+			'bussCode' => $bussCode,// 业务类型号
+		],$ext);
+		if($billQueryInfo){
+			$params['billQueryInfo'] = base64_encode($billQueryInfo);// 账单要素，JSON格式
 		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
+		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
+			$params ['origQryId'] = $ext ["origQryId"];
+		}
+
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->jfAppTransUrl, $params);
 	}
@@ -151,44 +128,39 @@ class Charge extends UnionPay {
 	/**
 	 * 账单查询
 	 * @param $orderId
-	 * @param $txnAmt
 	 * @param $bussCode
-	 * @param $billQueryInfo
-	 * @param $accNo
-	 * @param $customerInfo
+	 * @param string $billQueryInfo 账单要素, JSON格式
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryBill($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
-		$params = [
+	public function queryBill($orderId, $bussCode, $billQueryInfo, $ext = []) {
+		$params = array_merge([
 			'version' => $this->config['version'],
+			'signMethod' =>  $this->config['signMethod'],
 			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
+			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+			'merId' => $this->config['merId'],
+			'certId' => $this->getSignCertId(),
+
+			'txnType' => UnionPay::TXNTYPE_QUERYBILL,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_CHARGE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
+			'bussCode' => $bussCode,// 业务类型号
+		],$ext);
+		if($billQueryInfo){
+			$params['billQueryInfo'] = base64_encode($billQueryInfo);
 		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
 
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
+		// 多次查询送上一笔账单查询应答报文的queryId，正常情况不送。
+		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
+			$params ['origQryId'] = $ext ["origQryId"];
+		}
 
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->jfBackTransUrl, $params);
 	}
@@ -197,209 +169,87 @@ class Charge extends UnionPay {
 	 * 前台信用卡还款
 	 * @param $orderId
 	 * @param $txnAmt
-	 * @param $billQueryInfo
+	 * @param string $usr_num 信用卡号
+	 * @param string $usr_nm 持卡人姓名
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontRepay($orderId, $txnAmt, $billQueryInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+	public function frontRepay($orderId, $txnAmt, $usr_num, $usr_nm, $ext = []) {
+		$billQueryInfo = [
+			"usr_num" => $usr_num,
+			"usr_num2" => $usr_num,
+			"usr_nm" => $usr_nm?:''
 		];
-		$params ['bussCode'] = 'J1_9800_0000_1'; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '银联信用卡还款', $this->jfFrontTransUrl);
+		return $this->frontPayBill($orderId, $txnAmt, 'J1_9800_0000_1', json_encode($billQueryInfo), $ext);
 	}
 
 	/**
 	 * 后台信用卡还款
 	 * @param $orderId
 	 * @param $txnAmt
-	 * @param $billQueryInfo
+	 * @param string $usr_num 信用卡号
+	 * @param string $usr_nm 持卡人姓名
 	 * @param $accNo
 	 * @param $customerInfo
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backRepay($orderId, $txnAmt, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+	public function backRepay($orderId, $txnAmt, $usr_num, $usr_nm, $accNo, $customerInfo, $ext = []) {
+		$billQueryInfo = [
+			"usr_num" => $usr_num,
+			"usr_num2" => $usr_num,
+			"usr_nm" => $usr_nm?:''
 		];
-		$params ['bussCode'] = 'J1_9800_0000_1';
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfBackTransUrl, $params);
+		return $this->backPayBill($orderId, $txnAmt, 'J1_9800_0000_1', json_encode($billQueryInfo), $accNo, $customerInfo, $ext);
 	}
 
 	/**
 	 * 信用卡还款获取tn
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param $billQueryInfo
+	 * @param string $orderId
+	 * @param string $txnAmt
+	 * @param string $usr_num 信用卡号
+	 * @param string $usr_nm 持卡人姓名
 	 * @param array $ext
 	 * @return array
 	 */
-	public function appRepay($orderId, $txnAmt, $billQueryInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+	public function appRepay($orderId, $txnAmt, $usr_num, $usr_nm, $ext = []) {
+		$billQueryInfo = [
+			"usr_num" => $usr_num,
+			"usr_num2" => $usr_num,
+			"usr_nm" => $usr_nm?:''
 		];
-		$params ['bussCode'] = 'J1_9800_0000_1';
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfAppTransUrl, $params);
+		return $this->appPayBill($orderId, $txnAmt, 'J1_9800_0000_1', json_encode($billQueryInfo), $ext);
 	}
 
 	/**
 	 * 账单查询
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param $bussCode
-	 * @param $billQueryInfo
-	 * @param $accNo
-	 * @param $customerInfo
+	 * @param string $orderId
+	 * @param string $usr_num 信用卡卡号
+	 * @param string $query_month 账单月 YYYYMM
+	 * @param string $usr_nm 信用卡持卡人姓名
 	 * @param array $ext
 	 * @return array
 	 */
-	public function queryRepay($orderId, $txnAmt, $bussCode, $billQueryInfo, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+	public function queryRepay($orderId, $usr_num, $query_month, $usr_nm, $ext = []) {
+		$billQueryInfo = [
+			"usr_num" => $usr_num,
+			"query_month" => $query_month,
+			"usr_nm" => $usr_nm
 		];
-		$params ['bussCode'] = $bussCode; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfBackTransUrl, $params);
+		return $this->queryBill($orderId, 'J1_9800_0000_1', json_encode($billQueryInfo), $ext);
 	}
 
 	/**
 	 * 前台缴税
 	 * @param $orderId
 	 * @param $txnAmt
+	 * @param $origQryId
 	 * @param array $ext
 	 * @return string
 	 */
-	public function frontPayTax($orderId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '02',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = 'S0_9800_0000'; // 业务类型号，此处默认取demo演示页面传递的参数
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '银联缴税', $this->jfFrontTransUrl);
+	public function frontPayTax($orderId, $txnAmt, $origQryId, $ext = []) {
+		$ext['origQryId'] = $origQryId;
+		return $this->frontPayBill($orderId,$txnAmt,'S0_9800_0000',null,$ext);
 	}
 
 	/**
@@ -411,137 +261,64 @@ class Charge extends UnionPay {
 	 * @param array $ext
 	 * @return array
 	 */
-	public function backPayTax($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '02',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = 'S0_9800_0000';
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		$params['payTimeout'] = date('YmdHis', strtotime('+15 minutes'));
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfBackTransUrl, $params);
+	public function backPayTax($orderId, $txnAmt, $origQryId, $accNo, $customerInfo, $ext = []) {
+		$ext['origQryId'] = $origQryId;
+		return $this->backPayBill($orderId,$txnAmt,'S0_9800_0000',null, $accNo, $customerInfo, $ext);
 	}
 
 	/**
 	 * 缴税获取tn
 	 * @param $orderId
 	 * @param $txnAmt
+	 * @param $origQryId
 	 * @param array $ext
 	 * @return array
 	 */
-	public function appPayTax($orderId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_PAYBILL,
-			'txnSubType' => '02',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'frontUrl' => $this->config['returnUrl'],
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		];
-		$params ['bussCode'] = 'S0_9800_0000';
-		if (array_key_exists("origQryId", $ext) && $ext ["origQryId"] != "") {
-					$params ['origQryId'] = $ext ["origQryId"];
-		}
-		// 先查后缴送账单查询应答报文的queryId，直接缴费的不送
-
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfAppTransUrl, $params);
+	public function appPayTax($orderId, $txnAmt, $origQryId, $ext = []) {
+		$ext['origQryId'] = $origQryId;
+		return $this->appPayBill($orderId,$txnAmt,'S0_9800_0000',null, $ext);
 	}
 
 	/**
 	 * 申报
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param $billQueryInfo
-	 * @param array $ext
+	 * @param string    $orderId
+	 * @param int       $txnAmt
+	 * @param string    $usr_num 纳税人识别号
+	 * @param string    $col_organ_cd 征收机关代码
+	 * @param string    $col_voucher_no 应征凭证序号
+	 * @param string    $proc_flg 流程标识
+	 * @param array     $ext
 	 * @return array
 	 */
-	public function queryTax($orderId, $txnAmt, $billQueryInfo, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => UnionPay::TXNTYPE_QUERYTAX,
-			'txnSubType' => '02',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
-			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
-			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
+	public function queryTax($orderId, $txnAmt, $usr_num, $col_organ_cd, $col_voucher_no, $proc_flg, $ext = []) {
+		$billQueryInfo = [
+			"usr_num" => $usr_num,
+			"col_organ_cd" => $col_organ_cd,
+			"col_voucher_no" => $col_voucher_no,
+			"proc_flg" => $proc_flg,
 		];
-		$params ['bussCode'] = 'S0_9800_0000'; // 业务类型号，此处默认取demo演示页面传递的参数
-		$params ['billQueryInfo'] = base64_encode($billQueryInfo); // 账单要素，根据前文显示要素列表由用户填写值，JSON格式，此处默认取demo演示页面传递的参数
-
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
-		$params['signature'] = $this->sign($params);
-		return $this->post($this->jfBackTransUrl, $params);
+		return $this->queryBill($orderId,$txnAmt,'S0_9800_0000', json_encode($billQueryInfo,JSON_UNESCAPED_UNICODE), $ext);
 	}
 
 	/**
 	 * 交易状态查询
-	 * @param $orderId
-	 * @param $txnTime
+	 * @param string $orderId
+	 * @param string $txnTime
 	 * @param array $ext
 	 * @return array
+	 * @throws \Exception
 	 */
 	public function query($orderId, $txnTime, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'txnType' => '00',
+		$params = array_merge($this->commonParams(),[
+			'txnType' => UnionPay::TXNTYPE_QUERY,
 			'txnSubType' => '00',
 			'bizType' => '000000',
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+
 			'orderId' => $orderId,
-			'txnTime' => $txnTime,
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'txnTime' => $txnTime
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->jfSingleQueryUrl, $params);
 	}

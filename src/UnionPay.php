@@ -22,6 +22,7 @@ use zhangv\unionpay\util\HttpClient;
 
 class UnionPay {
 	const MODE_TEST = 'test', MODE_PROD = 'prod';
+	const VERSION_500 = '5.0.0', VERSION_510 = '5.1.0';
 	const SIGNMETHOD_RSA = '01', SIGNMETHOD_SHA256 = '11', SIGNMETHOD_SM3 = '12';
 	const CHANNELTYPE_PC = '07', CHANNELTYPE_MOBILE = '08';
 	const
@@ -34,7 +35,7 @@ class UnionPay {
 	const TXNTYPE_AUTHORIZE = '72', TXNTYPE_UNAUTHORIZE = '74', TXNTYPE_QUERYBIND = '75',
 		TXNTYPE_DIRECTDEBIT = '11', TXNTYPE_AUTHENTICATE = '77', TXNTYPE_BATCHDEBIT = '21',
 		TXNTYPE_QUERYBATCHDEBIT = '22';
-	const TXNTYPE_PAYBILL = '13', TXNTYPE_QUERYTAX = '73';
+	const TXNTYPE_PAYBILL = '13', TXNTYPE_QUERYBILL = '73';
 	const
 		BIZTYPE_B2C = '000201', //网关
 		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
@@ -384,11 +385,11 @@ HTML;
 		ksort($signData);
 		$signQueryString = $this->arrayToString($signData, true);
 		if ($signMethod == UnionPay::SIGNMETHOD_RSA) {
-			if ($params['version'] == '5.0.0') {
+			if ($params['version'] == self::VERSION_500) {
 				$datasha1 = sha1($signQueryString);
 				$signed = $this->rsaSign($datasha1);
 				return $signed;
-			} elseif ($params['version'] == '5.1.0') {
+			} elseif ($params['version'] == self::VERSION_510) {
 				$sha256 = hash('sha256', $signQueryString);
 				$privateKey = $this->getSignPrivateKey();
 				$result = openssl_sign($sha256, $signature, $privateKey, OPENSSL_ALGO_SHA256);
@@ -465,7 +466,7 @@ HTML;
 			ksort($verifyArr);
 			$verifyStr = $this->arrayToString($verifyArr);
 
-			if ($params['version'] == '5.0.0') { //测试环境公钥证书不正确
+			if ($params['version'] == self::VERSION_500) { //测试环境公钥证书不正确
 				$certId = $params['certId'];
 				$publicKey = $this->getVerifyPublicKey($certId);
 				$verifySha1 = sha1($verifyStr, FALSE);
@@ -475,7 +476,7 @@ HTML;
 					throw new \Exception('Verify Error:' . openssl_error_string());
 				}
 				return $result;
-			} elseif ($params['version'] == '5.1.0') {
+			} elseif ($params['version'] == self::VERSION_510) {
 				$signPubKeyCert = $params['signPubKeyCert'];
 				$cert = $this->verifyAndGetVerifyCert($signPubKeyCert);
 
@@ -758,18 +759,16 @@ HTML;
 	 * @return mixed
 	 */
 	public function updatePublicKey($orderId, $ext = []) {
-		$params = $this->commonParams();
-		$params = array_merge($params,[
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_UPDATEPUBLICKEY,
 			'txnSubType' => '00',
 			'bizType' => '000000',
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
+			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'certType' => '01',
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
-		]);
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->post($this->backTransUrl, $params);
 		return $result;
@@ -783,19 +782,18 @@ HTML;
 	 * @return mixed
 	 */
 	public function query($orderId, $txnTime, $ext = []) {
-		$params = $this->commonParams();
-		$params = array_merge($params,[
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_QUERY,
 			'txnSubType' => '00',
 			'bizType' => '000000',
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+
 			'orderId' => $orderId,
 			'txnTime' => $txnTime
-		]);
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->post($this->singleQueryUrl, $params, false);
-		return $result;
+		return $this->post($this->singleQueryUrl, $params, false);
 	}
 
 	/**
@@ -805,8 +803,7 @@ HTML;
 	 * @return mixed
 	 */
 	public function fileDownload($settleDate, $fileType = '00') {
-		$params = $this->commonParams();
-		$params = array_merge($params,[
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_FILEDOWNLOAD,
 			'txnSubType' => '01',
 			'bizType' => '000000',

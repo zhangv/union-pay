@@ -121,8 +121,6 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 	 * @expectedException Exception
 	 */
 	public function query_nonexists(){
-//		$r = $this->unionPay->query(20180204092701,date('YmdHis'));
-//		$this->assertEquals(34,$this->unionPay->respCode);
 		$mock = Mockery::mock('HttpClient');
 		$mock->shouldReceive('post')->andReturn("accessType=0&bizType=000000&encoding=UTF-8&merId=700000000000001&orderId=20180204092701&respCode=34&respMsg=查无此交易[2600000]&signMethod=01&txnSubType=00&txnTime=20180614041856&txnType=00&version=5.1.0&signPubKeyCert=-----BEGIN CERTIFICATE-----
 MIIEQzCCAyugAwIBAgIFEBJJZVgwDQYJKoZIhvcNAQEFBQAwWDELMAkGA1UEBhMC
@@ -152,7 +150,6 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 ");
 		$this->unionPay->setHttpClient($mock);
 		$r = $this->unionPay->query(20180204092701,date('YmdHis'));
-		var_dump($r);
 	}
 
 	/** @test */

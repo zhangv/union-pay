@@ -5,22 +5,86 @@
  * Date: 01/02/2018
  * Time: 22:29
  */
-require_once __DIR__ . "/../../demo/autoload.php";
 
 use zhangv\unionpay\UnionPay;
 
 class ChargeTest extends PHPUnit\Framework\TestCase{
 	/** @var  \zhangv\unionpay\service\Charge */
 	private $unionPay;
+	private $config;
 
 	public function setUp(){
-		list($mode,$config) = include __DIR__ .'/../../demo/config.php';
-		$this->unionPay = UnionPay::Charge($config,$mode);
+		list($mode,$this->config) = include __DIR__ .'/../../demo/config-direct.php';
+		$this->unionPay = UnionPay::Charge($this->config,$mode);
 	}
 
 	private static $outTradeNoOffset = 0;
 	private function genOutTradeNo(){
 		return time().(self::$outTradeNoOffset++);
+	}
+
+	/** @test */
+	public function frontRepay(){
+		$orderId = 'testpaybill'.date('YmdHis');
+		$creditCard = $this->config['testAcc'][2];
+		$usr_num = $creditCard['accNo'];
+		$usr_nm = $creditCard['customerNm'];
+
+		$r = $this->unionPay->frontRepay($orderId,1,$usr_num,$usr_nm);
+		$this->assertNotNull($r);
+	}
+
+	/**
+	 * @test
+	 * @expectedException Exception
+	 * @expectedExceptionMessage [44]输入号码错误或暂未开通此项业务
+	 */
+	public function backRepay(){
+		$orderId = 'testpaybill'.date('YmdHis');
+
+		$creditCard = $this->config['testAcc'][2];
+		$usr_num = $creditCard['accNo'];
+		$usr_nm = $creditCard['customerNm'];
+
+		$debitCard = $this->config['testAcc'][3];
+		$accNo = $debitCard['accNo'];
+		$customerInfo = array(
+			'phoneNo' => $debitCard['phoneNo'], //手机号
+			'certifTp' => $debitCard['certifTp'], //证件类型
+			'certifId' => $debitCard['certifId'], //证件ID
+			'customerNm' => $debitCard['customerNm'], //姓名
+		);
+
+		$r = $this->unionPay->backRepay($orderId,1,$usr_num,$usr_nm,$accNo,$customerInfo);
+	}
+	/**
+	 * @test
+	 * @expectedException Exception
+	 * @expectedExceptionMessage [44]输入号码错误或暂未开通此项业务
+	 */
+	public function appRepay(){
+		$orderId = 'testpaybill'.date('YmdHis');
+
+		$creditCard = $this->config['testAcc'][2];
+		$usr_num = $creditCard['accNo'];
+		$usr_nm = $creditCard['customerNm'];
+
+		$r = $this->unionPay->appRepay($orderId,1,$usr_num,$usr_nm);
+	}
+
+	/**
+	 * @test
+	 * @expectedException Exception
+	 * @expectedExceptionMessage [01]交易失败
+	 */
+	public function queryRepay(){
+		$orderId = 'testpaybill'.date('YmdHis');
+
+		$creditCard = $this->config['testAcc'][2];
+		$usr_num = $creditCard['accNo'];
+		$usr_nm = $creditCard['customerNm'];
+
+		$r = $this->unionPay->queryRepay($orderId,$usr_num,date('Ym'),$usr_nm);
 	}
 
 	/** @test */

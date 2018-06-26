@@ -9,7 +9,7 @@ use zhangv\unionpay\UnionPay;
  * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
  * @method mixed updatePublicKey($orderId, $ext = [])
  * @method mixed query($orderId, $txnTime, $ext = [])
- * @method mixed fileDownload($settleDate, $fileType)
+ * @method mixed fileDownload($settleDate, $fileType = '00')
  */
 class B2C extends UnionPay {
 
