@@ -25,9 +25,6 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => $this->config['currencyCode'],
 			'defaultPayType' => '0001', //默认支付方式
 			//交易参数
@@ -37,7 +34,7 @@ class B2C extends UnionPay {
 			'txnTime' => date('YmdHis'),
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params);
+		return $this->submitForm($this->frontTransUrl,$params);
 	}
 
 	/**
@@ -53,9 +50,6 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
@@ -80,9 +74,6 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'origQryId' => $origQryId,
@@ -106,9 +97,6 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -118,7 +106,7 @@ class B2C extends UnionPay {
 			'orderDesc' => $orderDesc,
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '预授权');
+		return $this->submitForm($this->frontTransUrl,$params);
 	}
 
 	/**
@@ -134,9 +122,7 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHUNDO,
 			'txnSubType' => '00',
-			'bizType' => '000000',
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'bizType' => '000000', //overwrite
 			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -161,9 +147,6 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISH,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
@@ -187,9 +170,7 @@ class B2C extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTHFINISHUNDO,
 			'txnSubType' => '00',
-			'bizType' => '000000',
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'bizType' => '000000',//overwrite
 			//交易参数
 			'orderId' => $orderId,
 			'origQryId' => $origQryId, //原预授权的queryId，可以从查询接口或者通知接口中获取
@@ -235,4 +216,17 @@ class B2C extends UnionPay {
 	public function onPayUndoNotify(array $notifyData, callable $callback, bool $validate = true) {
 		return parent::onPayUndoNotify($notifyData,$callback,$validate);
 	}
+
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_B2C,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+		]);
+	}
+
 }

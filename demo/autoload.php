@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Asia/Shanghai');
+
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 	/** @var \Composer\Autoload\ClassLoader $loader */
 	$loader = require __DIR__ . '/../vendor/autoload.php';

@@ -25,9 +25,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -51,9 +48,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -65,7 +59,7 @@ class Direct extends UnionPay {
 			'payTimeout' => '',
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params, '开通');
+		$result = $this->createPostForm($params, '开通',null, true);
 		return $result;
 	}
 
@@ -93,9 +87,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_QUERYOPEN,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -120,9 +111,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHENTICATE,
 			'txnSubType' => $smsType,
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -148,9 +136,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' =>  $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -178,9 +163,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '03',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' =>  $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -210,9 +192,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' =>  $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -226,7 +205,7 @@ class Direct extends UnionPay {
 			'payTimeout' => ''
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params, '开通并支付');
+		$result = $this->createPostForm($params, '开通并支付',null,true);
 		return $result;
 	}
 
@@ -243,9 +222,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'txnAmt' => $txnAmt,
@@ -269,9 +245,6 @@ class Direct extends UnionPay {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'txnAmt' => $txnAmt,
@@ -280,6 +253,18 @@ class Direct extends UnionPay {
 		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
+	}
+
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_DIRECT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+		]);
 	}
 
 }

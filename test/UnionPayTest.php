@@ -14,10 +14,12 @@ use PHPUnit\Framework\TestCase;
 class UnionPayTest extends TestCase{
 	/** @var  UnionPay */
 	private $unionPay;
+	/** @var  array */
+	private $config;
 
 	public function setUp(){
-		list($mode,$config) = include __DIR__ .'/../demo/config.php';
-		$this->unionPay = new UnionPay($config,$mode);
+		list($mode,$this->config) = include __DIR__ .'/../demo/config.php';
+		$this->unionPay = new UnionPay($this->config,$mode);
 	}
 
 	/**
@@ -28,6 +30,18 @@ class UnionPayTest extends TestCase{
 		$r1 = $this->unionPay->encryptData($accNo);
 		$r2 = $this->unionPay->encryptData($accNo);
 		$this->assertNotEquals($r1,$r2);
+
+//		$r3 = $this->unionPay->decryptData($r2);
+//		$this->assertEquals($r1,$r3);
+	}
+
+	/**
+	 * @test
+	 */
+	public function updatePublicKey(){
+		$orderId = date('YmdHis');
+		$f = $this->unionPay->updatePublicKey($orderId);
+		$this->assertEquals('00',$f['respCode']);
 	}
 
 	/**
@@ -80,6 +94,16 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$r = $this->unionPay->onNotify($notify,function($data){
 			return $data;
 		},false);
+		$this->assertEquals('b',$r['a']);
+
+		$notify = ['a' => 'b', 'signMethod' => UnionPay::SIGNMETHOD_RSA,
+			'version' => UnionPay::VERSION_500];
+		$notify['certId'] = $this->unionPay->getSignCertId();
+		$sig = $this->unionPay->sign($notify);
+		$notify['signature'] = $sig;
+		$r = $this->unionPay->onNotify($notify,function($data){
+			return $data;
+		},true);
 		$this->assertEquals('b',$r['a']);
 	}
 

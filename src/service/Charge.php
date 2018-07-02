@@ -9,10 +9,6 @@ use zhangv\unionpay\UnionPay;
  * */
 class Charge extends UnionPay {
 
-	public function __construct($config, $mode = UnionPay::MODE_PROD) {
-		parent::__construct($config, $mode);
-	}
-
 	/**
 	 * 前台账单缴费
 	 * @param $orderId
@@ -26,9 +22,6 @@ class Charge extends UnionPay {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 			'frontUrl' => $this->config['returnUrl'],
 
 			'orderId' => $orderId,
@@ -36,7 +29,7 @@ class Charge extends UnionPay {
 			'txnAmt' => $txnAmt,
 			'currencyCode' => $this->config['currencyCode'],
 			'bussCode' => $bussCode,// 业务类型号，此处默认取demo演示页面传递的参数
-			'payTimeout' => date('YmdHis', strtotime('+15 minutes'))
+			'payTimeout' => date('YmdHis', time() + 15 * 60)
 		],$ext);
 		if($billQueryInfo){
 			$params['billQueryInfo'] = base64_encode($billQueryInfo);// 账单要素，JSON格式
@@ -46,7 +39,7 @@ class Charge extends UnionPay {
 			$params ['origQryId'] = $ext ["origQryId"];
 		}
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '银联缴费', $this->jfFrontTransUrl);
+		return $this->createPostForm($params, '银联缴费', $this->jfFrontTransUrl, true);
 	}
 
 	/**
@@ -64,9 +57,6 @@ class Charge extends UnionPay {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
@@ -102,9 +92,6 @@ class Charge extends UnionPay {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PAYBILL,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
@@ -134,20 +121,9 @@ class Charge extends UnionPay {
 	 * @return array
 	 */
 	public function queryBill($orderId, $bussCode, $billQueryInfo, $ext = []) {
-		$params = array_merge([
-			'version' => $this->config['version'],
-			'signMethod' =>  $this->config['signMethod'],
-			'encoding' => $this->config['encoding'],
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-			'merId' => $this->config['merId'],
-			'certId' => $this->getSignCertId(),
-
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_QUERYBILL,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_CHARGE,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'bussCode' => $bussCode,// 业务类型号
@@ -311,8 +287,8 @@ class Charge extends UnionPay {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_QUERY,
 			'txnSubType' => '00',
+
 			'bizType' => '000000',
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
 
 			'orderId' => $orderId,
@@ -349,4 +325,15 @@ class Charge extends UnionPay {
 		return $this->get($url);
 	}
 
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_CHARGE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
+		]);
+	}
 }

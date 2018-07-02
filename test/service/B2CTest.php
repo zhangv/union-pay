@@ -10,10 +10,11 @@ use zhangv\unionpay\UnionPay;
 class B2CTest extends PHPUnit\Framework\TestCase{
 	/** @var  \zhangv\unionpay\service\B2C */
 	private $unionPay;
+	private $config;
 
 	public function setUp(){
-		list($mode,$config) = include __DIR__ .'/../../demo/config.php';
-		$this->unionPay = UnionPay::B2C($config,$mode);
+		list($mode,$this->config) = include __DIR__ .'/../../demo/config.php';
+		$this->unionPay = UnionPay::B2C($this->config,$mode);
 	}
 
 	private static $outTradeNoOffset = 0;
@@ -25,7 +26,18 @@ class B2CTest extends PHPUnit\Framework\TestCase{
 	public function pay(){
 		$orderId = $this->genOutTradeNo();
 		$f = $this->unionPay->pay($orderId,1);
-		$this->assertNotNull($f);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
+		$this->assertNotFalse(strpos($f,$orderId));
+
+		$f = $this->unionPay->pay($orderId,-1);
+		$this->assertNotFalse(strpos($f, "交易失败 10[9100003]Invalid field[txnAmt]"));
+
+		//5.0.0
+		$this->config['version'] = UnionPay::VERSION_500;
+		$this->unionPay->setConfig($this->config);
+		$f = $this->unionPay->pay($orderId,1);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
+		$this->assertNotFalse(strpos($f,$orderId));
 	}
 
 	/**
@@ -50,7 +62,9 @@ class B2CTest extends PHPUnit\Framework\TestCase{
 	public function preAuth(){
 		$orderId = $this->genOutTradeNo();
 		$f = $this->unionPay->preAuth($orderId,1,'test');
-		$this->assertNotNull($f);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
+		$this->assertNotFalse(strpos($f,$orderId));
+		$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_PREAUTH));
 	}
 
 	/** @test
@@ -156,5 +170,38 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 	public function fileDownload(){
 		$this->unionPay->fileDownload('0119');
 		$this->assertEquals(UnionPay::RESPCODE_SUCCESS,$this->unionPay->respCode);
+	}
+
+	/**
+	 * @test
+	 */
+	function onPayNotify(){
+		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_CONSUME];
+		$r = $this->unionPay->onPayNotify($notify,function($data){
+			return $data;
+		},false);
+		$this->assertEquals('b',$r['a']);
+	}
+
+	/**
+	 * @test
+	 */
+	function onPayUndoNotify(){
+		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_CONSUMEUNDO];
+		$r = $this->unionPay->onPayUndoNotify($notify,function($data){
+			return $data;
+		},false);
+		$this->assertEquals('b',$r['a']);
+	}
+
+	/**
+	 * @test
+	 */
+	function onRefundNotify(){
+		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_REFUND];
+		$r = $this->unionPay->onRefundNotify($notify,function($data){
+			return $data;
+		},false);
+		$this->assertEquals('b',$r['a']);
 	}
 }

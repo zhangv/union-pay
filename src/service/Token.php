@@ -21,9 +21,6 @@ class Token extends Direct {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_APPLYTOKEN,
 			'txnSubType' => '05',
-			'bizType' => UnionPay::BIZTYPE_TOKEN,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'tokenPayData' => $tokenPayData,
@@ -94,9 +91,8 @@ class Token extends Direct {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DELETETOKEN,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_TOKEN,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'backUrl' => null,
+//			'certId' => null,
 			//交易参数
 			'orderId' => $orderId,
 			'tokenPayData' => $tokenPayData,
@@ -118,9 +114,8 @@ class Token extends Direct {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_APPLYTOKEN,
 			'txnSubType' => '03',
-			'bizType' => UnionPay::BIZTYPE_TOKEN,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'backUrl' => null,
+			'certId' => null,
 			//交易参数
 			'orderId' => $orderId,
 			'tokenPayData' => $tokenPayData,
@@ -158,9 +153,6 @@ class Token extends Direct {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_TOKEN,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' =>  $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -239,6 +231,18 @@ class Token extends Direct {
 	 */
 	public function fileDownload($settleDate, $fileType = '00') {
 		parent::fileDownload($settleDate, $fileType);
+	}
+
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_TOKEN,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+		]);
 	}
 
 }

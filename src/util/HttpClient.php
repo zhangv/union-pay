@@ -12,6 +12,7 @@ class HttpClient {
 	private $errNo = null;
 	private $info = null;
 	private $timeout = 1;
+	private $responseHeader = null;
 
 	public function __construct($timeout = 1) {
 		$this->initInstance($timeout);
@@ -62,11 +63,11 @@ class HttpClient {
 		$this->instance = null;
 		return $result;
 	}
-
 	private function execute() {
 		$result = curl_exec($this->instance);
 		$this->errNo = curl_errno($this->instance);
 		$this->info = curl_getinfo($this->instance);
+		$this->responseHeader = substr($result, 0, $this->info['header_size']);
 		return $result;
 	}
 
@@ -82,5 +83,9 @@ class HttpClient {
 
 	public function getInfo() {
 		return $this->info;
+	}
+
+	public function getResponseHeader() {
+		return $this->responseHeader;
 	}
 }

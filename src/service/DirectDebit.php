@@ -26,9 +26,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '11',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'frontUrl' => $this->config['returnUrl'],
@@ -53,9 +50,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '11',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -78,9 +72,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_UNAUTHORIZE,
 			'txnSubType' => '04',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'frontUrl' => $this->config['returnUrl'],
@@ -103,9 +94,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -131,9 +119,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTDEBIT,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
@@ -185,9 +170,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -213,9 +195,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -240,9 +219,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_QUERYBIND,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'bindId' => $bindId,
@@ -265,9 +241,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_UNAUTHORIZE,
 			'txnSubType' => '00',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
 			//交易参数
 			'orderId' => $orderId,
 			'bindId' => $bindId,
@@ -290,10 +263,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -317,10 +286,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHORIZE,
 			'txnSubType' => '10',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -345,10 +310,6 @@ class DirectDebit extends B2C {
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHENTICATE,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
-			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
 			'accNo' => $this->encryptData($accNo),
@@ -425,4 +386,15 @@ class DirectDebit extends B2C {
 		return $this->post($this->batchTransUrl, $params);
 	}
 
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+		]);
+	}
 }

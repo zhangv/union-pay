@@ -188,6 +188,10 @@ HTML;
 		$this->httpClient = $httpClient;
 	}
 
+	public function setConfig($config){
+		$this->config = $config;
+	}
+
 	/**
 	 * @param string $url
 	 * @param array $params
@@ -207,8 +211,10 @@ HTML;
 		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
 
 		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
-
+		//todo retry
 		if (!$this->response || $this->response == '') {
+//			var_dump($this->httpClient->getInfo());
+//			var_dump($this->httpClient->getResponseHeader());
 			throw new Exception("No response from remote host");
 		}
 
@@ -224,7 +230,7 @@ HTML;
 		$this->respCode = $this->responseArray['respCode'];
 		$this->respMsg = (!empty($this->responseArray['respMsg']))?$this->responseArray['respMsg']:null;
 		if ($this->respCode == UnionPay::RESPCODE_SUCCESS) {
-			if ($validateResp === true && !$this->validateSign($this->responseArray)) {
+			if ($validateResp === true && $this->validateSign($this->responseArray) !== 1) {
 				throw new \Exception("Signature verification failed, response: {$this->response}");
 			}else {
 				return $this->responseArray;
@@ -232,10 +238,28 @@ HTML;
 		}else {
 			throw new \Exception("{$this->respMsg} - request: $postbody , response: {$this->response}",$this->respCode);
 		}
+	}protected function get($url,$params = []) {
+		return $this->httpClient->get($url, $params);
 	}
 
-	protected function get($url,$params = []) {
-		return $this->httpClient->get($url, $params);
+	/**
+	 * No need to create an auto submitting form
+	 * @param $url
+	 * @param array $params
+	 * @return mixed
+	 */
+	protected function submitForm($url,$params = []) {
+		$postbody = $this->getRequestParamString($params);
+
+		$headers = array('Content-type:application/x-www-form-urlencoded;charset=UTF-8');
+		$opts = array(
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSLVERSION => 1
+		);
+		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
+		return $this->httpClient->post($url, $postbody, $headers, $opts);
 	}
 
 	public function convertQueryStringToArray($str, $urldecode = false) {
@@ -318,7 +342,7 @@ HTML;
 	 * 取签名证书ID(SN)
 	 * @return string
 	 */
-	protected function getSignCertId() {
+	public function getSignCertId() {
 		return $this->getCertIdPfx($this->config['signCertPath']);
 	}
 
@@ -359,9 +383,13 @@ HTML;
 	 * @param array $params
 	 * @param string $title
 	 * @param string $url
+	 * @param bool $submit
 	 * @return string
 	 */
-	protected function createPostForm($params, $title = '支付', $url = null) {
+	protected function createPostForm($params, $title = '支付', $url = null, $submit = false) {
+		if($submit === true){
+			return $this->submitForm($url?:$this->frontTransUrl,$params);
+		}
 		$input = '';
 		foreach ($params as $key => $item) {
 			if (trim($item) == '') {
@@ -461,7 +489,7 @@ HTML;
 	/**
 	 * 验证签名
 	 * @throws \Exception
-	 * @return bool
+	 * @return int
 	 */
 	public function validateSign($params) {
 		if ($params['signMethod'] == UnionPay::SIGNMETHOD_RSA) {
@@ -579,6 +607,7 @@ HTML;
 			$this->config['verifyRootCertPath'],
 			$this->config['verifyMiddleCertPath'],
 			$this->config['encryptCertPath'],
+			$this->config['signCertPath'],
 		]);
 		if (!isset($pubkeys[$certId])) {
 			throw new \Exception("Public key not found with certificate id ($certId), existing ones " . implode(',', array_keys($pubkeys)));
@@ -589,6 +618,11 @@ HTML;
 	protected function getVerifyPublicKeyByCerts(array $paths) {
 		foreach ($paths as $path) {
 			$x509data = file_get_contents($path);
+			if(strrpos($path,'.pfx') == strlen($path) - strlen('.pfx')){
+
+				openssl_pkcs12_read($x509data, $certs, $this->config['signCertPwd']);
+				$x509data = $certs['cert'];
+			}
 			openssl_x509_read($x509data);
 			$certdata = openssl_x509_parse($x509data);
 			$sn = $certdata['serialNumber'];
@@ -642,7 +676,7 @@ HTML;
 	 * @return string
 	 * @throws Exception
 	 */
-	protected function decryptData($data) {
+	public function decryptData($data) {
 		$cert_path = $this->config['signCertPath'];
 		$cert_pwd = $this->config['signCertPwd'];
 		$data = base64_decode($data);
@@ -715,7 +749,7 @@ HTML;
 	 * @throws \Exception
 	 */
 	public function onNotify(array $notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
+		if($validate === true && $this->validateSign($notifyData) !== 1) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
 		if (is_callable($callback)) {
 			return call_user_func_array($callback, [$notifyData]);
 		}else {
@@ -874,7 +908,7 @@ HTML;
 	 * @return array
 	 */
 	protected function commonParams() {
-		return array(
+		return [
 			'version' => $this->config['version'],
 			'signMethod' =>  $this->config['signMethod'],
 			'encoding' => $this->config['encoding'],
@@ -882,7 +916,7 @@ HTML;
 			'backUrl' => $this->config['notifyUrl'],
 			'merId' => $this->config['merId'],
 			'certId' => $this->getSignCertId()
-		);
+		];
 	}
 
 }

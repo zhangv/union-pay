@@ -18,6 +18,11 @@ class DirectTest extends TestCase{
 		$this->unionPay = UnionPay::Direct($this->config,$mode);
 	}
 
+	private static $outTradeNoOffset = 0;
+	private function genOutTradeNo(){
+		return time().(self::$outTradeNoOffset++);
+	}
+
 	/**
 	 * 测试商户号仅支持前台开通，后台开通：无此交易权限。（需要用真实商户号测试）
 	 * @test
@@ -34,6 +39,40 @@ class DirectTest extends TestCase{
 			'smsCode' => '111111', //短信验证码
 		);
 		$r = $this->unionPay->backOpen($orderId,$accNo,$customerInfo);
+	}
+
+	/** @test */
+	public function frontOpen(){
+		$testAcc = $this->config['testAcc'][1];
+		$accNo = $testAcc['accNo'];
+		$customerInfo = array(
+			'phoneNo' => $testAcc['phoneNo'], //手机号
+			'cvn2' => $testAcc['cvn2'], //cvn2
+			'expired' => $testAcc['expired'], //有效期，YYMM格式，持卡人卡面印的是MMYY的，请注意代码设置倒一下
+			'smsCode' => '111111', //短信验证码
+		);
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->frontOpen($orderId,$accNo,$customerInfo);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Activate.action'));
+		$this->assertNotFalse(strpos($f,$orderId));
+		$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_DIRECTOPEN));
+	}
+
+	/** @test */
+	public function frontOpenPay(){
+		$testAcc = $this->config['testAcc'][1];
+		$accNo = $testAcc['accNo'];
+		$customerInfo = array(
+			'phoneNo' => $testAcc['phoneNo'], //手机号
+			'cvn2' => $testAcc['cvn2'], //cvn2
+			'expired' => $testAcc['expired'], //有效期，YYMM格式，持卡人卡面印的是MMYY的，请注意代码设置倒一下
+			'smsCode' => '111111', //短信验证码
+		);
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->frontOpenPay($orderId,1,$accNo,$customerInfo);
+		$this->assertNotFalse(strpos($f,"https://cashier.test.95516.com/b2c/api/ActivateAndPay.action"));
+		$this->assertNotFalse(strpos($f,$orderId));
+		$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_CONSUME));
 	}
 
 	/**
@@ -122,4 +161,21 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$this->unionPay->payByInstallment($orderId,100,$accNo,$customerInfo,$testAcc['instalTransInfo']);
 	}
 
+	/**
+	 * @test
+	 * @expectedException Exception
+	 */
+	public function payUndo(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->payUndo($orderId,1,1);
+	}
+
+	/**
+	 * @test
+	 * @expectedException Exception
+	 */
+	public function refund(){
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->refund($orderId,1,1);
+	}
 }
