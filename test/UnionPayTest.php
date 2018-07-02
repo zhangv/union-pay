@@ -115,4 +115,17 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$notify = ['a'=>'b'];
 		$r = $this->unionPay->onNotify($notify,'',false);
 	}
+
+	/**
+	 * @test
+	 */
+	function sign(){
+		$notify = ['a' => 'b', 'signMethod' => UnionPay::SIGNMETHOD_SHA256, //sha256
+			'version' => UnionPay::VERSION_500];
+		$sig = $this->unionPay->sign($notify,UnionPay::SIGNMETHOD_SHA256);
+		$notify['signature'] = $sig;
+
+		$r = $this->unionPay->validateSign($notify);
+		$this->assertTrue($r);
+	}
 }

@@ -412,7 +412,7 @@ HTML;
 	 */
 	public function sign($params, $signMethod = UnionPay::SIGNMETHOD_RSA) {
 		$signData = $params;
-		if (empty($signData['certId'])) {
+		if (empty($signData['certId']) && $signMethod == UnionPay::SIGNMETHOD_RSA) {//RSA用证书
 			$signData['certId'] = $this->getSignCertId();
 		}
 		ksort($signData);
@@ -429,12 +429,18 @@ HTML;
 				if ($result) {
 					$signature_base64 = base64_encode($signature);
 					return $signature_base64;
-				}else {
+				} else {
 					throw new \Exception("Error while signing");
 				}
-			}else {
+			} else {
 				throw new \Exception("Unsupported version - {$params['version']}");
 			}
+		}elseif($signMethod == UnionPay::SIGNMETHOD_SHA256){
+			$params_str = $signQueryString;
+			$params_before_sha256 = hash('sha256', $this->config['secureKey']);
+			$params_before_sha256 = $params_str.'&'.$params_before_sha256;
+			$params_after_sha256 = hash('sha256',$params_before_sha256);
+			return $params_after_sha256;
 		}else {
 			throw new \Exception("Unsupported Sign Method - {$signMethod}");
 		}
@@ -499,7 +505,7 @@ HTML;
 			ksort($verifyArr);
 			$verifyStr = $this->arrayToString($verifyArr);
 
-			if ($params['version'] == self::VERSION_500) { //测试环境公钥证书不正确
+			if ($params['version'] == self::VERSION_500) {
 				$certId = $params['certId'];
 				$publicKey = $this->getVerifyPublicKey($certId);
 				$verifySha1 = sha1($verifyStr, FALSE);

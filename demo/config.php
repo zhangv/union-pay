@@ -18,5 +18,6 @@ return ['test',
 		'verifyMiddleCertPath' => dirname(__FILE__) . '/../cert/acp_test_middle.cer', //v5.1.0 required
 		'encryptCertPath' => dirname(__FILE__) . '/../cert/acp_test_enc.cer',
 		'ifValidateCNName' => false, //正式环境设置为true
+		'secureKey' => '88888888' //v5.0.0 sha256加密方式使用
 	]
 ];
