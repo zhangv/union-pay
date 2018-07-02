@@ -217,8 +217,13 @@ class DirectDebitTest extends TestCase{
 			'smsCode' => '111111', //短信验证码
 		);
 
-		$r = $this->unionPay->smsAuthenticate($orderId,$accNo,$customerInfo);
-		$this->assertEquals('00',$r['respCode']);
+		try{
+			$r = $this->unionPay->smsAuthenticate($orderId,$accNo,$customerInfo);
+			$this->assertEquals('00',$r['respCode']);
+		}catch (Exception $e){
+			$code = $e->getCode();
+			$this->assertEquals('37',$code);//已超过最大查询次数或操作过于频繁
+		}
 	}
 
 	/**
@@ -239,10 +244,13 @@ orderId|currencyCode|txnAmt|accType|accNo|customerNm|bizType|certifTp|certifId|p
 
 	/**
 	 * @test
-	 * @expectedException Exception
-	 * @expectedExceptionMessage [34]批次（1000）不存在[7103401]
 	 */
 	public function queryBatchDebit(){
-		$r = $this->unionPay->queryBatchDebit('1000');
+		try{
+			$r = $this->unionPay->queryBatchDebit('1000');
+		}catch (Exception $e){
+			$this->assertEquals('34',$e->getCode()); //批次（1000）不存在[7103401]
+		}
+
 	}
 }

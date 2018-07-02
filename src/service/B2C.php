@@ -200,4 +200,39 @@ class B2C extends UnionPay {
 		return $this->post($this->backTransUrl, $params);
 	}
 
+	/**
+	 * 支付异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onPayNotify(array $notifyData, callable $callback, bool $validate = true) {
+		return parent::onPayNotify($notifyData,$callback,$validate);
+	}
+
+	/**
+	 * 退款异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onRefundNotify(array $notifyData, callable $callback, bool $validate = true) {
+		return parent::onRefundNotify($notifyData,$callback,$validate);
+	}
+
+	/**
+	 * 消费撤销异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onPayUndoNotify(array $notifyData, callable $callback, bool $validate = true) {
+		return parent::onPayUndoNotify($notifyData,$callback,$validate);
+	}
 }

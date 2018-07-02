@@ -75,9 +75,9 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 	/**
 	 * @test
 	 */
-	function onPayNotify(){
+	function onNotify(){
 		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onPayNotify($notify,function($data){
+		$r = $this->unionPay->onNotify($notify,function($data){
 			return $data;
 		},false);
 		$this->assertEquals('b',$r['a']);
@@ -87,48 +87,8 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 	 * @test
 	 * @expectedException Exception
 	 */
-	function onPayNotify_notcallable(){
+	function onNotify_notcallable(){
 		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onPayNotify($notify,false,false);
-	}
-
-	/**
-	 * @test
-	 */
-	function onPayUndoNotify(){
-		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onPayUndoNotify($notify,function($data){
-			return $data;
-		},false);
-		$this->assertEquals('b',$r['a']);
-	}
-
-	/**
-	 * @test
-	 * @expectedException Exception
-	 */
-	function onPayUndoNotify_notcallable(){
-		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onPayUndoNotify($notify,false,false);
-	}
-
-	/**
-	 * @test
-	 */
-	function onRefundNotify(){
-		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onRefundNotify($notify,function($data){
-			return $data;
-		},false);
-		$this->assertEquals('b',$r['a']);
-	}
-
-	/**
-	 * @test
-	 * @expectedException Exception
-	 */
-	function onRefundNotify_notcallable(){
-		$notify = ['a'=>'b'];
-		$r = $this->unionPay->onRefundNotify($notify,false,false);
+		$r = $this->unionPay->onNotify($notify,'',false);
 	}
 }

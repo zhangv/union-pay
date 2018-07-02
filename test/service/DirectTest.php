@@ -90,7 +90,7 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 			$r = $this->unionPay->sms($orderId,$accNo,$customerInfo);
 			$this->assertEquals('00',$r['respCode']);
 		}catch (Exception $e){
-
+			$this->assertEquals('37',$e->getCode()); //已超过最大查询次数或操作过于频繁[6100087]
 		}
 
 	}
@@ -119,10 +119,7 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$testAcc = $this->config['testAcc'][1];
 		$accNo = $testAcc['accNo'];
 		$customerInfo = ['smsCode' => '111111'];
-		$ext = [
-			'instalTransInfo' => $testAcc['instalTransInfo']
-		];
-		$this->unionPay->payByInstallment($orderId,100,$accNo,$customerInfo,$ext);
+		$this->unionPay->payByInstallment($orderId,100,$accNo,$customerInfo,$testAcc['instalTransInfo']);
 	}
 
 }

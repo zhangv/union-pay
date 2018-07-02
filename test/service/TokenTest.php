@@ -9,13 +9,13 @@ require_once __DIR__ . "/../../demo/autoload.php";
 use zhangv\unionpay\UnionPay;
 use PHPUnit\Framework\TestCase;
 
-class DirectTokenTest extends TestCase{
-	/** @var  \zhangv\unionpay\service\DirectToken */
+class TokenTest extends TestCase{
+	/** @var  \zhangv\unionpay\service\Token */
 	private $unionPay;
 	private $config;
 	public function setUp(){
 		list($mode,$this->config) = include __DIR__ .'/../../demo/config-direct.php';
-		$this->unionPay = UnionPay::DirectToken($this->config,$mode);
+		$this->unionPay = UnionPay::Token($this->config,$mode);
 	}
 
 	/**
@@ -36,7 +36,8 @@ class DirectTokenTest extends TestCase{
 		$tokenPayData = "{trId=62000000001&tokenType=01}";
 
 		try{
-			$r = $this->unionPay->applyToken($orderId,$txnTime,$tokenPayData);
+			$r = $this->unionPay->applyToken($orderId,$tokenPayData);
+
 		}catch (Exception $e){
 			$this->assertEquals('34',$this->unionPay->respCode);
 			return;//if exception raised, then return
@@ -75,15 +76,13 @@ class DirectTokenTest extends TestCase{
 	 */
 	public function payByToken(){
 		$orderId = date('YmdHis');
-		$txnTime = date('YmdHis');
 		$customerInfo = array(
 			'smsCode' => '111111',
 		);
 		$token = '6235240000020837064'; //maybe you have to query this token
 		$tokenPayData = "{trId=62000000001&token={$token}}";
-		$ext['customerInfo'] = $customerInfo;
 		try{
-			$r = $this->unionPay->payByToken($orderId,1,$txnTime,$tokenPayData,$ext);
+			$r = $this->unionPay->payByToken($orderId,1,$tokenPayData,$customerInfo);
 		}catch (Exception $e){
 			$this->assertEquals('89',$this->unionPay->respCode);
 		}

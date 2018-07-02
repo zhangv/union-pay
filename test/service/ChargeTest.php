@@ -36,8 +36,6 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 
 	/**
 	 * @test
-	 * @expectedException Exception
-	 * @expectedExceptionMessage [44]输入号码错误或暂未开通此项业务
 	 */
 	public function backRepay(){
 		$orderId = 'testpaybill'.date('YmdHis');
@@ -55,12 +53,14 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 			'customerNm' => $debitCard['customerNm'], //姓名
 		);
 
-		$r = $this->unionPay->backRepay($orderId,1,$usr_num,$usr_nm,$accNo,$customerInfo);
+		try{
+			$r = $this->unionPay->backRepay($orderId,1,$usr_num,$usr_nm,$accNo,$customerInfo);
+		}catch (Exception $e){
+			$this->assertEquals('44',$e->getCode());//输入号码错误或暂未开通此项业务
+		}
 	}
 	/**
 	 * @test
-	 * @expectedException Exception
-	 * @expectedExceptionMessage [44]输入号码错误或暂未开通此项业务
 	 */
 	public function appRepay(){
 		$orderId = 'testpaybill'.date('YmdHis');
@@ -69,13 +69,15 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 		$usr_num = $creditCard['accNo'];
 		$usr_nm = $creditCard['customerNm'];
 
-		$r = $this->unionPay->appRepay($orderId,1,$usr_num,$usr_nm);
+		try{
+			$r = $this->unionPay->appRepay($orderId,1,$usr_num,$usr_nm);
+		}catch (Exception $e){
+			$this->assertEquals('44',$e->getCode());//输入号码错误或暂未开通此项业务
+		}
 	}
 
 	/**
 	 * @test
-	 * @expectedException Exception
-	 * @expectedExceptionMessage [01]交易失败
 	 */
 	public function queryRepay(){
 		$orderId = 'testpaybill'.date('YmdHis');
@@ -84,7 +86,11 @@ class ChargeTest extends PHPUnit\Framework\TestCase{
 		$usr_num = $creditCard['accNo'];
 		$usr_nm = $creditCard['customerNm'];
 
-		$r = $this->unionPay->queryRepay($orderId,$usr_num,date('Ym'),$usr_nm);
+		try{
+			$r = $this->unionPay->queryRepay($orderId,$usr_num,date('Ym'),$usr_nm);
+		}catch (Exception $e){
+			$this->assertEquals('01',$e->getCode());//交易失败。详情请咨询95516[2123912]
+		}
 	}
 
 	/** @test */

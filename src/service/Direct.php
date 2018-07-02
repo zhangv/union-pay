@@ -21,24 +21,19 @@ class Direct extends UnionPay {
 	 * @return mixed
 	 */
 	public function backOpen($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'UTF-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'channelType' => '07',
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params = array_merge($params, $ext);
+			'channelType' => UnionPay::CHANNELTYPE_PC,
+			//交易参数
+			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'txnTime' => date('YmdHis'),
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -52,45 +47,38 @@ class Direct extends UnionPay {
 	 * @return string
 	 */
 	public function frontOpen($orderId, $accNo, $customerInfo, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'utf-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_DIRECTOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		$params['accType'] = '01';
-		$params['frontUrl'] = $this->config['openReturnUrl'];
-		$params['backUrl'] = $this->config['openNotifyUrl'];
-		$params['payTimeout'] = ''; // date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'txnTime' => date('YmdHis'),
+			'accType' => '01',
+			'frontUrl' => $this->config['openReturnUrl'],
+			'backUrl' => $this->config['openNotifyUrl'],
+			'payTimeout' => '',
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params, '开通');
 		return $result;
 	}
 
-	public function onOpenNotify($notifyData, callable $callback) {
-		if ($this->validateSign($notifyData)) {
-			if ($callback && is_callable($callback)) {
-				return call_user_func_array($callback, [$notifyData]);
-			}else {
-				print('ok');
-			}
-		}else {
-			throw new \Exception('Invalid opened notify data');
-		}
+	/**
+	 * 无跳转开通异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onOpenNotify(array $notifyData, callable $callback, bool $validate = true) {
+		return parent::onOpenNotify($notifyData,$callback,$validate);
 	}
 
 	/**
@@ -101,24 +89,18 @@ class Direct extends UnionPay {
 	 * @return array
 	 */
 	public function queryOpen($orderId, $accNo, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'UTF-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_QUERYOPEN,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'txnTime' => date('YmdHis'),
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -134,24 +116,19 @@ class Direct extends UnionPay {
 	 * @return array
 	 */
 	public function sms($orderId, $accNo, $customerInfo, $smsType = Direct::SMSTYPE_OPEN, $ext = []):array{
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'UTF-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_AUTHENTICATE,
 			'txnSubType' => $smsType,
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'accNo' => $this->encryptData($accNo),
+			'txnTime' => date('YmdHis'),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo)
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -173,55 +150,49 @@ class Direct extends UnionPay {
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
-			'currencyCode' =>  $this->config['currencyCode'],
 			'channelType' => UnionPay::CHANNELTYPE_PC,
+			'currencyCode' =>  $this->config['currencyCode'],
 			//交易参数
 			'orderId' => $orderId,
-			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
 			'accNo' => $this->encryptData($accNo),
 			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'txnTime' => date('YmdHis')
 		],$ext);
-
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
 	 * 分期付款
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param $accNo
-	 * @param $customerInfo
+	 * @param string $orderId
+	 * @param string $txnAmt
+	 * @param string $accNo
+	 * @param string $customerInfo
+	 * @param string $installmentInfo
 	 * @param array $ext
 	 * @return array
 	 */
-	public function payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'UTF-8',
+	public function payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $installmentInfo, $ext = []) {
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '03',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'currencyCode' => '156', //交易币种，境内商户勿改
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['backUrl'] = $this->config['notifyUrl'];
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnAmt'] = $txnAmt;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-
-		//分期付款用法（商户自行设计分期付款展示界面）：
-		//【生产环境】支持的银行列表清单请联系银联业务运营接口人索要
- 		$params['instalTransInfo'] = $ext['instalTransInfo'];
-		$params = array_merge($params, $ext);
+			'currencyCode' =>  $this->config['currencyCode'],
+			//交易参数
+			'orderId' => $orderId,
+			'txnAmt' => $txnAmt,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'txnTime' => date('YmdHis'),
+			'backUrl' => $this->config['notifyUrl'],
+			//分期付款用法（商户自行设计分期付款展示界面）：
+			//【生产环境】支持的银行列表清单请联系银联业务运营接口人索要
+			'instalTransInfo' => $installmentInfo
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -235,30 +206,25 @@ class Direct extends UnionPay {
 	 * @return string
 	 */
 	public function frontOpenPay($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'utf-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'encryptCertId' => $this->getCertIdCer($this->config['encryptCertPath']),
-			'currencyCode' => '156',
-		);
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnAmt'] = $txnAmt;
-		$params['txnTime'] = date('YmdHis');
-		$params['accNo'] = $this->encryptData($accNo);
-		$params['customerInfo'] = $this->encryptCustomerInfo($customerInfo);
-		$params['accType'] = '01';
-		$params['frontUrl'] = $this->config['openReturnUrl'];
-		$params['backUrl'] = $this->config['openNotifyUrl'];
-		$params['payTimeout'] = ''; // date('YmdHis', strtotime('+15 minutes')); //问了银联技术支持，让留空，否则测试时会报错：订单已超时
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+			'currencyCode' =>  $this->config['currencyCode'],
+			//交易参数
+			'orderId' => $orderId,
+			'txnAmt' => $txnAmt,
+			'accNo' => $this->encryptData($accNo),
+			'customerInfo' => $this->encryptCustomerInfo($customerInfo),
+			'txnTime' => date('YmdHis'),
+			'accType' => '01',
+			'frontUrl' => $this->config['openReturnUrl'],
+			'backUrl' => $this->config['openNotifyUrl'],
+			'payTimeout' => ''
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		$result = $this->createPostForm($params, '开通并支付');
 		return $result;
@@ -273,24 +239,19 @@ class Direct extends UnionPay {
 	 * @return array
 	 */
 	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'utf-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUMEUNDO,
-			'txnSubType' => '00',
+			'txnSubType' => '01',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'backUrl' => $this->config['notifyUrl']
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['txnAmt'] = $txnAmt;
-		$params['origQryId'] = $origQryId;
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'txnAmt' => $txnAmt,
+			'origQryId' => $origQryId,
+			'txnTime' => date('YmdHis')
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -304,24 +265,19 @@ class Direct extends UnionPay {
 	 * @return array
 	 */
 	public function refund($orderId, $origQryId, $txnAmt, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'signMethod' =>  UnionPay::SIGNMETHOD_RSA,
-			'encoding' => 'utf-8',
+		$params = array_merge($this->commonParams(),[
+			//基础参数
 			'txnType' => UnionPay::TXNTYPE_REFUND,
 			'txnSubType' => '00',
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
-			'backUrl' => $this->config['notifyUrl']
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params['merId'] = $this->config['merId'];
-		$params['orderId'] = $orderId;
-		$params['txnTime'] = date('YmdHis');
-		$params['txnAmt'] = $txnAmt;
-		$params['origQryId'] = $origQryId;
-		$params = array_merge($params, $ext);
+			//交易参数
+			'orderId' => $orderId,
+			'txnAmt' => $txnAmt,
+			'origQryId' => $origQryId,
+			'txnTime' => date('YmdHis')
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}

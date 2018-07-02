@@ -5,7 +5,7 @@ use zhangv\unionpay\UnionPay;
 
 
 list($mode, $config) = include '../config-direct.php';
-$unionPay = UnionPay::DirectToken($config, $mode);
+$unionPay = UnionPay::Token($config, $mode);
 
 $payOrderNo = date('YmdHis');
 $amt = 2;

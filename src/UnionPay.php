@@ -14,7 +14,7 @@ use zhangv\unionpay\util\HttpClient;
  * @method static service\B2C              B2C(array $config,string $mode)
  * @method static service\Direct           Direct(array $config,string $mode)
  * @method static service\DirectDebit      DirectDebit(array $config,string $mode)
- * @method static service\DirectToken      DirectToken(array $config,string $mode)
+ * @method static service\Token            Token(array $config,string $mode)
  * @method static service\Qrcode           Qrcode(array $config,string $mode)
  * @method static service\Wap              Wap(array $config,string $mode)
  * @method static service\Charge           Charge(array $config,string $mode)
@@ -211,6 +211,11 @@ HTML;
 		if (!$this->response || $this->response == '') {
 			throw new Exception("No response from remote host");
 		}
+
+		if($this->response == 'Invalid request.'){
+			throw new Exception("Invalid request, body = {$postbody}");
+		}
+
 		$this->responseArray = $this->convertQueryStringToArray($this->response);
 		if (empty($this->responseArray['respCode'])) {
 			throw new Exception("Response error - {$this->response}, request: {$postbody}");
@@ -225,7 +230,7 @@ HTML;
 				return $this->responseArray;
 			}
 		}else {
-			throw new \Exception("[{$this->respCode}]{$this->respMsg} - request: $postbody , response: {$this->response}");
+			throw new \Exception("{$this->respMsg} - request: $postbody , response: {$this->response}",$this->respCode);
 		}
 	}
 
@@ -702,6 +707,23 @@ HTML;
 	}
 
 	/**
+	 * 通用异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public function onNotify(array $notifyData, $callback, bool $validate = true) {
+		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
+		if (is_callable($callback)) {
+			return call_user_func_array($callback, [$notifyData]);
+		}else {
+			throw new Exception("The callback($callback) must be callable.");
+		}
+	}
+
+	/**
 	 * 支付异步通知处理
 	 * @param array $notifyData
 	 * @param callable $callback
@@ -709,12 +731,15 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayNotify($notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid paid notify data');
-		if (is_callable($callback)) {
-			return call_user_func_array($callback, [$notifyData]);
-		}else {
-			throw new Exception("The callback($callback) must be callable.");
+	protected function onPayNotify(array $notifyData, callable $callback, bool $validate = true) {
+		$respCode = $notifyData['respCode'];
+		if ($respCode == '00') {
+			$txnType = $notifyData['txnType'];
+			if ($txnType == UnionPay::TXNTYPE_CONSUME) {
+				return $this->onNotify($notifyData,$callback,$validate);
+			}else{
+				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_CONSUME);
+			}
 		}
 	}
 
@@ -726,12 +751,15 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onRefundNotify($notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid refund notify data');
-		if (is_callable($callback)) {
-			return call_user_func_array($callback, [$notifyData]);
-		}else {
-			throw new Exception("The callback($callback) must be callable.");
+	protected function onRefundNotify(array $notifyData, callable $callback, bool $validate = true) {
+		$respCode = $notifyData['respCode'];
+		if ($respCode == '00') {
+			$txnType = $notifyData['txnType'];
+			if ($txnType == UnionPay::TXNTYPE_REFUND) {
+				return $this->onNotify($notifyData,$callback,$validate);
+			}else{
+				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_REFUND);
+			}
 		}
 	}
 
@@ -743,14 +771,38 @@ HTML;
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function onPayUndoNotify($notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid pay undo notify data');
-		if (is_callable($callback)) {
-			return call_user_func_array($callback, [$notifyData]);
-		}else {
-			throw new Exception("The callback($callback) must be callable.");
+	protected function onPayUndoNotify(array $notifyData, callable $callback, bool $validate = true) {
+		$respCode = $notifyData['respCode'];
+		if ($respCode == '00') {
+			$txnType = $notifyData['txnType'];
+			if ($txnType == UnionPay::TXNTYPE_CONSUMEUNDO) {
+				return $this->onNotify($notifyData,$callback,$validate);
+			}else{
+				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_CONSUMEUNDO);
+			}
 		}
 	}
+
+	/**
+	 * 无跳转开通异步通知处理
+	 * @param array $notifyData
+	 * @param callable $callback
+	 * @param bool $validate
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	protected function onOpenNotify(array $notifyData, callable $callback, bool $validate = true) {
+		$respCode = $notifyData['respCode'];
+		if ($respCode == '00') {
+			$txnType = $notifyData['txnType'];
+			if ($txnType == UnionPay::TXNTYPE_DIRECTOPEN) {
+				return $this->onNotify($notifyData,$callback,$validate);
+			}else{
+				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_DIRECTOPEN);
+			}
+		}
+	}
+
 
 	/**
 	 * 加密公钥更新查询

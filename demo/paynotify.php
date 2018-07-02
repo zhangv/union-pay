@@ -4,7 +4,7 @@ require_once __DIR__ . "/autoload.php";
 use zhangv\unionpay\UnionPay;
 
 list($mode, $config) = include './config.php';
-$unionPay = new UnionPay($config, $mode);
+$unionPay = UnionPay::B2C($config, $mode);
 
 $notifyData = $_POST;
 $respCode = $notifyData['respCode'];
@@ -19,7 +19,7 @@ if ($respCode == '00') {
 	}else {
 		echo 'fail';
 	}
-	} elseif (in_array($respCode, ['03', '04', '05'])) {
+} elseif (in_array($respCode, ['03', '04', '05'])) {
 	//后续需发起交易状态查询交易确定交易状态
 }else {
 	echo 'fail';
