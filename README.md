@@ -13,7 +13,7 @@ support:
 * [App - App/控件支付](src/service/App.php)
 * [B2B - 企业支付](src/service/B2B.php)
 * [Direct - 无跳转标准版](src/service/Direct.php)
-* [DirectToken - 无跳转Token版](src/service/DirectToken.php)
+* [Token - 无跳转Token版](src/service/Token.php)
 * [Qrcode - 二维码支付](src/service/Qrcode.php)
 * [DirectDebit - 代收](src/service/DirectDebit.php)
 * [Charge - 缴费产品](src/service/Charge.php)
@@ -27,7 +27,7 @@ or
 add:
 
 ```
-"zhangv/union-pay":"0.8"
+"zhangv/union-pay":"0.8.11"
 ```
 in composer.json
 
