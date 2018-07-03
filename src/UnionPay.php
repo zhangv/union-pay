@@ -122,6 +122,8 @@ class UnionPay {
 	public $respCode, $respMsg;
 	public static $verifyCerts510 = [];
 	public static $verifyPublicKeys = [];
+	public static $signCerts = [];
+	public static $encryptCerts = [];
 	/** @var array 支付配置 */
 	protected $config = [];
 	/** @var string */
@@ -258,7 +260,7 @@ HTML;
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSLVERSION => 1
 		);
-		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
+		$url = $this->apiEndpoint . $url;
 		return $this->httpClient->post($url, $postbody, $headers, $opts);
 	}
 
@@ -650,10 +652,8 @@ HTML;
 			$params_before_sha256 = $verifyStr . '&' . $sha256secureKey;
 			$params_after_sha256 = hash('sha256', $params_before_sha256);
 			return $params_after_sha256 == $signature;
-		} else if ($params['signMethod'] == UnionPay::SIGNMETHOD_SM3) {
-			throw new \Exception("Unsupported signmethod - {$params['signMethod']}");
 		} else {
-			return false;
+			throw new \Exception("Unsupported signmethod - {$params['signMethod']}");
 		}
 	}
 
@@ -665,15 +665,36 @@ HTML;
 	 */
 	public function encryptData($data) {
 		$cert_path = $this->config['encryptCertPath'];
-		$public_key = file_get_contents($cert_path);
-		if ($public_key === false) {
-			throw new Exception('Fail reading encrypt certificate');
-		}
-		if (!openssl_x509_read($public_key)) {
-			throw new Exception(" openssl_x509_read fail。");
-		}
+		$public_key = self::getEncryptKey($cert_path);
 		openssl_public_encrypt($data, $crypted, $public_key);
 		return base64_encode($crypted);
+	}
+
+	public static function getEncryptKey($cert_path){
+		if(!array_key_exists($cert_path, self::$encryptCerts)){
+			self::initEncryptCert($cert_path);
+		}
+		if(array_key_exists($cert_path, self::$encryptCerts)){
+			return self::$encryptCerts[$cert_path]->key;
+		}
+		return false;
+	}
+
+	private static function initEncryptCert($cert_path) {
+		$x509data = file_get_contents ( $cert_path );
+		if($x509data === false ){
+			throw new Exception("Fail reading encrypt certificate from $cert_path");
+		}
+
+		if(!openssl_x509_read ( $x509data )){
+			throw new Exception("$cert_path openssl_x509_read fail");
+		}
+
+		$cert = new \stdClass();
+		$certdata = openssl_x509_parse ( $x509data );
+		$cert->certId = $certdata ['serialNumber'];
+		$cert->key = $x509data;
+		self::$encryptCerts[$cert_path] = $cert;
 	}
 
 	/**
@@ -687,19 +708,39 @@ HTML;
 		$cert_pwd = $this->config['signCertPwd'];
 		$data = base64_decode($data);
 		$private_key = $this->getSignKeyFromPfx($cert_path, $cert_pwd);
-		openssl_private_decrypt($data, $crypted, $private_key);
-		return $crypted;
+		openssl_private_decrypt($data, $decrypted, $private_key);
+		return $decrypted;
 	}
 
 	private function getSignKeyFromPfx($certPath, $certPwd) {
-		$pkcs12certdata = file_get_contents($certPath);
-		if ($pkcs12certdata === false) {
+		if (!array_key_exists($certPath, self::$signCerts)) {
+			self::initSignCert($certPath, $certPwd);
+		}
+		return self::$signCerts[$certPath]->key;
+	}
+
+	private static function initSignCert($certPath, $certPwd){
+		$pkcs12certdata = file_get_contents ( $certPath );
+		if($pkcs12certdata === false ){
 			throw new Exception("file_get_contents fail。");
 		}
-		if (openssl_pkcs12_read($pkcs12certdata, $certs, $certPwd) === false) {
+
+		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) == FALSE ){
 			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
 		}
-		return $certs ['pkey'];
+
+		$cert = new \stdClass();
+		$x509data = $certs ['cert'];
+
+		if(!openssl_x509_read ( $x509data )){
+			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_x509_read fail。");
+		}
+		$certdata = openssl_x509_parse ( $x509data );
+		$cert->certId = $certdata ['serialNumber'];
+		$cert->key = $certs ['pkey'];
+		$cert->cert = $x509data;
+
+		self::$signCerts[$certPath] = $cert;
 	}
 
 	protected function getCustomerInfo($customerInfo) {

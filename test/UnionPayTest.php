@@ -30,9 +30,16 @@ class UnionPayTest extends TestCase{
 		$r1 = $this->unionPay->encryptData($accNo);
 		$r2 = $this->unionPay->encryptData($accNo);
 		$this->assertNotEquals($r1,$r2);
+	}
 
-//		$r3 = $this->unionPay->decryptData($r2);
-//		$this->assertEquals($r1,$r3);
+	/**
+	 * @test
+	 */
+	public function decryptData(){
+		$accNo = '6226********0095';
+		$r1 = "cjsqgmTALZk1Rcb/l0GL+WKoExXkdZPv+kEezrB0+qpw0qQNNXjCDnV65peho8RyqPchKR3uX22Ov9A5mkUsoUtQD8Z9p1dBxv/s0C+fZOLHJz3LkJJL8xDgfAS7OGghS7gKRJt05S5WDnC5SBoIvb5+PFCB9gjOEJrOBYE3YgwBqQ/UQbPpVsk5FnOKlYQyHC5Z/BBz5YhUbarjAKwBN8aY3aLpD+PN0ii535XuMV2ZTnnkKvVtiWNHHZf5HOD5qgUOR83QSAQSEw6/5inRqI6miWCbAVeidk0JbOIqbElXUeiPDwFvGx6DmBWsydqKI4iQsfYBIrdScevzZnGvHg==";
+		$r2 = $this->unionPay->decryptData($r1);
+		$this->assertEquals($accNo,$r2);
 	}
 
 	/**

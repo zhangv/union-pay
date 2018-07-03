@@ -8,8 +8,9 @@ use \Exception;
  * 二维码支付
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=89
- * */
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=89
+ * @method mixed fileDownload($settleDate, $fileType = '00')
+ */
 class Qrcode extends B2C {
 
 	/**
@@ -20,14 +21,23 @@ class Qrcode extends B2C {
 	 * @return string
 	 */
 	public function apply($orderId, $txnAmt, $ext = []) {
-		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
-		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::pay($orderId, $txnAmt, $ext);
-		return $result;
+		$params = array_merge(UnionPay::commonParams(),[
+			'txnType' => UnionPay::TXNTYPE_CONSUME,
+			'txnSubType' => '07',
+			'bizType' => UnionPay::BIZTYPE_QRCODE,
+			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'currencyCode' => $this->config['currencyCode'],
+			'orderId' => $orderId,
+			'txnTime' => date('YmdHis'),
+			'txnAmt' => $txnAmt,
+		],$ext);
+		$params['signature'] = $this->sign($params);
+		return $this->post($this->backTransUrl, $params);
 	}
 
 	/**
-	 * 支付
+	 * 二维码消费（被扫）
 	 * @param $orderId
 	 * @param $txnAmt
 	 * @param array $ext
@@ -35,30 +45,23 @@ class Qrcode extends B2C {
 	 * @throws Exception
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
-		if (empty($ext['termId'])) {
-			throw new Exception("termId is required.");
-		}
+//		if (empty($ext['termId'])) {
+//			throw new Exception("termId is required.");
+//		}
 		if (empty($ext['qrNo'])) {
 			throw new Exception("qrNo is required.");
 		}
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge(UnionPay::commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '06',
 			'bizType' => UnionPay::BIZTYPE_QRCODE,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'currencyCode' => $this->config['currencyCode'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
 	}
@@ -106,14 +109,5 @@ class Qrcode extends B2C {
 		return parent::query($orderId, $txnTime, $ext);
 	}
 
-	/**
-	 * 文件传输
-	 * @param string $settleDate MMDD
-	 * @param string $fileType
-	 * @return mixed
-	 */
-	public function fileDownload($settleDate, $fileType = '00') {
-		return parent::fileDownload($settleDate, $fileType);
-	}
 
 }

@@ -5,7 +5,16 @@ use zhangv\unionpay\UnionPay;
  * 银联手机App支付、ApplePay
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=3
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=3
+ *
+ * @method mixed updatePublicKey($orderId, $ext = [])
+ * @method mixed query($orderId, $txnTime, $ext = [])
+ * @method mixed payUndo($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed refund($orderId, $origQryId, $refundAmt, $ext = [])
+ * @method mixed preAuthUndo($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed preAuthFinish($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed fileDownload($settleDate, $fileType = '00')
  * */
 class App extends B2C {
 
@@ -17,75 +26,19 @@ class App extends B2C {
 	 * @return array
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
-		$params = [
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_B2C,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
+			'currencyCode' => $this->config['currencyCode'],
+
 			'frontUrl' => $this->config['returnUrl'],
 			'backUrl' => $this->config['notifyUrl'],
-			'accessType' => '0', //接入类型
-			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $txnAmt,
-			'currencyCode' => '156',
-			'defaultPayType' => '0001', //默认支付方式
-		];
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->appTransUrl,$params);
-	}
-
-	/**
-	 * 消费撤销
-	 * @param string $orderId
-	 * @param string $origQryId
-	 * @param string $txnAmt
-	 * @param array $ext
-	 * @return mixed
-	 */
-	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
-		return $result;
-	}
-
-
-	/**
-	 * 退款
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $refundAmt
-	 * @param array $ext
-	 * @return mixed
-	 */
-	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
-		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
-		return $result;
-	}
-
-	/**
-	 * 交易状态查询
-	 * @param $orderId
-	 * @param array $ext
-	 * @return mixed
-	 */
-	public function query($orderId, $txnTime, $ext = []) {
-		return parent::query($orderId, $txnTime, $ext);
-	}
-
-	/**
-	 * 文件传输
-	 * @param string $settleDate MMDD
-	 * @param string $fileType
-	 * @return mixed
-	 */
-	public function fileDownload($settleDate, $fileType = '00') {
-		return parent::fileDownload($settleDate, $fileType);
 	}
 
 	/**
@@ -97,64 +50,19 @@ class App extends B2C {
 	 * @return mixed
 	 */
 	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
-		$params = array(
-			'version' => $this->config['version'],
-			'encoding' => $this->config['encoding'],
+		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',
-			'bizType' => UnionPay::BIZTYPE_B2C,
+			'currencyCode' => $this->config['currencyCode'],
 			'frontUrl' =>  $this->config['returnUrl'],
 			'backUrl' => $this->config['notifyUrl'],
-			'signMethod' => UnionPay::SIGNMETHOD_RSA,
-			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
-			'accessType' => '0',
-			'merId' => $this->config['merId'],
 			'orderId' => $orderId,
 			'txnTime' => date('YmdHis'),
 			'txnAmt' => $amt,
-			'currencyCode' => '156',
 			'orderDesc' => $orderDesc,
-		);
-		$params['certId'] = $this->getSignCertId();
-		$params = array_merge($params, $ext);
+		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->appTransUrl,$params);
-	}
-
-	/**
-	 * 预授权撤销
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function preAuthUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		return parent::preAuthUndo($orderId, $origQryId, $txnAmt, $ext);
-	}
-
-	/**
-	 * 预授权完成
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function preAuthFinish($orderId, $origQryId, $txnAmt, $ext = []) {
-		return parent::preAuthFinish($orderId, $origQryId, $txnAmt, $ext);
-	}
-
-	/**
-	 * 预授权完成撤销
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		return parent::preAuthFinishUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -171,6 +79,18 @@ class App extends B2C {
 		$params_sha1x16 = sha1($data, FALSE);
 		$isSuccess = openssl_verify($params_sha1x16, $signature, $public_key, OPENSSL_ALGO_SHA1);
 		return ($isSuccess === 1) ? true:false;
+	}
+
+	/**
+	 * 通用配置参数
+	 * @return array
+	 */
+	protected function commonParams() {
+		return  array_merge(UnionPay::commonParams(),[
+			'bizType' => UnionPay::BIZTYPE_B2C,
+			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
+			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
+		]);
 	}
 
 }

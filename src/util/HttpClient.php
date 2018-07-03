@@ -12,6 +12,8 @@ class HttpClient {
 	private $errNo = null;
 	private $info = null;
 	private $timeout = 1;
+	private $retry = 3;
+	private $tried = 0;
 	private $responseHeader = null;
 
 	public function __construct($timeout = 1) {
@@ -43,7 +45,10 @@ class HttpClient {
 		curl_setopt($this->instance, CURLOPT_HTTPGET, true);
 		curl_setopt($this->instance, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt_array($this->instance, $opts);
-		$result = $this->execute();
+		do{
+			$result = $this->execute();
+		}while( (!$result || trim($result) == '') && ($this->tried++ < $this->retry) );
+
 		curl_close($this->instance);
 		$this->instance = null;
 		return $result;
@@ -58,7 +63,10 @@ class HttpClient {
 		curl_setopt($this->instance, CURLOPT_POSTFIELDS, $params);
 		curl_setopt($this->instance, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt_array($this->instance, $opts);
-		$result = $this->execute();
+		do{
+			$result = $this->execute();
+		}while( (!$result || trim($result) == '') && ($this->tried++ < $this->retry) );
+
 		curl_close($this->instance);
 		$this->instance = null;
 		return $result;

@@ -5,7 +5,6 @@
  * Date: 01/02/2018
  * Time: 22:29
  */
-require_once __DIR__ . "/../../demo/autoload.php";
 
 use zhangv\unionpay\UnionPay;
 
@@ -21,6 +20,21 @@ class AppTest extends PHPUnit\Framework\TestCase{
 	private static $outTradeNoOffset = 0;
 	private function genOutTradeNo(){
 		return time().(self::$outTradeNoOffset++);
+	}
+	/** @test */
+	public function pay(){
+		$orderId = $this->genOutTradeNo();
+		$r = $this->unionPay->pay($orderId,1);
+		$this->assertEquals('00',$r['respCode']);
+		$this->assertNotNull($r['tn']);
+	}
+
+	/** @test */
+	public function preAuth(){
+		$orderId = $this->genOutTradeNo();
+		$r = $this->unionPay->preAuth($orderId,1,'orderdesc');
+		$this->assertEquals('00',$r['respCode']);
+		$this->assertNotNull($r['tn']);
 	}
 
 	/** @test */
