@@ -5,7 +5,7 @@ use zhangv\unionpay\UnionPay;
  * 无跳转支付(标准版)
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
+ * @link https://open.unionpay.com/ajweb/product/newProDetail?proId=2&cataId=20
  * @method mixed updatePublicKey($orderId, $ext = [])
  * @method mixed query($orderId, $txnTime, $ext = [])
  * @method mixed fileDownload($settleDate, $fileType)
@@ -98,7 +98,7 @@ class Direct extends UnionPay {
 
 	/**
 	 * 发送短信验证码(开通、支付、预授权...)
-	 * @ref https://open.unionpay.com/ajweb/product/newProApiShow?proId=2&apiId=93
+	 * @link https://open.unionpay.com/ajweb/product/newProApiShow?proId=2&apiId=93
 	 * @param $orderId
 	 * @param $accNo
 	 * @param $customerInfo

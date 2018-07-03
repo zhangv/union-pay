@@ -6,7 +6,7 @@ use zhangv\unionpay\UnionPay;
  * 网关支付
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=1
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=1
  * @method mixed updatePublicKey($orderId, $ext = [])
  * @method mixed query($orderId, $txnTime, $ext = [])
  * @method mixed fileDownload($settleDate, $fileType = '00')

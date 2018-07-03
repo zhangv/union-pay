@@ -87,7 +87,7 @@ class App extends B2C {
 	 */
 	protected function commonParams() {
 		return  array_merge(UnionPay::commonParams(),[
-			'bizType' => UnionPay::BIZTYPE_B2C,
+			'bizType' => UnionPay::BIZTYPE_DEFAULT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 		]);

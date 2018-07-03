@@ -6,7 +6,7 @@ use zhangv\unionpay\UnionPay;
  * 手机网页支付
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/detail?id=66
+ * @link https://open.unionpay.com/ajweb/product/detail?id=66
  * @method mixed query($orderId, $txnTime, $ext = [])
  * @method mixed fileDownload($settleDate, $fileType)
  */

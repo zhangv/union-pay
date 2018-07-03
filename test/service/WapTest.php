@@ -7,14 +7,14 @@
  */
 use zhangv\unionpay\UnionPay;
 
-class B2CTest extends PHPUnit\Framework\TestCase{
-	/** @var  \zhangv\unionpay\service\B2C */
+class WapTest extends PHPUnit\Framework\TestCase{
+	/** @var  \zhangv\unionpay\service\Wap */
 	private $unionPay;
 	private $config;
 
 	public function setUp(){
 		list($mode,$this->config) = include __DIR__ .'/../../demo/config.php';
-		$this->unionPay = UnionPay::B2C($this->config,$mode);
+		$this->unionPay = UnionPay::Wap($this->config,$mode);
 	}
 
 	private static $outTradeNoOffset = 0;
@@ -174,7 +174,6 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 
 	/**
 	 * @test
-	 * @expectedException Exception
 	 */
 	function onPayNotify(){
 		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_CONSUME];
@@ -182,16 +181,10 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 			return $data;
 		},false);
 		$this->assertEquals('b',$r['a']);
-
-		unset($notify['txnType']);
-		$r = $this->unionPay->onPayNotify($notify,function($data){
-			return $data;
-		},false);
 	}
 
 	/**
 	 * @test
-	 * @expectedException Exception
 	 */
 	function onPayUndoNotify(){
 		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_CONSUMEUNDO];
@@ -199,15 +192,10 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 			return $data;
 		},false);
 		$this->assertEquals('b',$r['a']);
-		unset($notify['txnType']);
-		$r = $this->unionPay->onPayUndoNotify($notify,function($data){
-			return $data;
-		},false);
 	}
 
 	/**
 	 * @test
-	 * @expectedException Exception
 	 */
 	function onRefundNotify(){
 		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_REFUND];
@@ -215,9 +203,5 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 			return $data;
 		},false);
 		$this->assertEquals('b',$r['a']);
-		unset($notify['txnType']);
-		$r = $this->unionPay->onRefundNotify($notify,function($data){
-			return $data;
-		},false);
 	}
 }

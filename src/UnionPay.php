@@ -26,25 +26,49 @@ class UnionPay {
 	const SIGNMETHOD_RSA = '01', SIGNMETHOD_SHA256 = '11', SIGNMETHOD_SM3 = '12';
 	const CHANNELTYPE_PC = '07', CHANNELTYPE_MOBILE = '08';
 	const
-		TXNTYPE_CONSUME = '01', TXNTYPE_PREAUTH = '02', TXNTYPE_PREAUTHFINISH = '03',
-		TXNTYPE_REFUND = '04', TXNTYPE_QUERY = '00',
-		TXNTYPE_CONSUMEUNDO = '31', TXNTYPE_PREAUTHUNDO = '32', TXNTYPE_PREAUTHFINISHUNDO = '33',
-		TXNTYPE_FILEDOWNLOAD = '76', TXNTYPE_UPDATEPUBLICKEY = '95';
-	const TXNTYPE_DIRECTOPEN = '79', TXNTYPE_QUERYOPEN = '78', TXNTYPE_APPLYTOKEN = '79',
-		TXNTYPE_DELETETOKEN = '74', TXNTYPE_UPDATETOKEN = '79';
-	const TXNTYPE_AUTHORIZE = '72', TXNTYPE_UNAUTHORIZE = '74', TXNTYPE_QUERYBIND = '75',
-		TXNTYPE_DIRECTDEBIT = '11', TXNTYPE_AUTHENTICATE = '77', TXNTYPE_BATCHDEBIT = '21',
-		TXNTYPE_QUERYBATCHDEBIT = '22';
-	const TXNTYPE_PAYBILL = '13', TXNTYPE_QUERYBILL = '73';
+		TXNTYPE_QUERY   = '00', //查询交易
+		TXNTYPE_CONSUME = '01', //消费
+		TXNTYPE_PREAUTH = '02', //预授权
+		TXNTYPE_PREAUTHFINISH = '03', //预授权完成
+		TXNTYPE_REFUND  = '04', //退货
+		TXNTYPE_LOAD    = '05', //圈存
+		TXNTYPE_DIRECTDEBIT = '11', //代收
+		TXNTYPE_DIRECTDEPOSIT = '12', //代付
+		TXNTYPE_PAYBILL = '13', //账单支付
+		TXNTYPE_TRANSFER = '14', //转账
+		TXNTYPE_BATCHDEBIT = '21', //批量交易
+		TXNTYPE_QUERYBATCHDEBIT = '22', //批量查询
+		TXNTYPE_CONSUMEUNDO = '31', //消费撤销
+		TXNTYPE_PREAUTHUNDO = '32', //预授权撤销
+		TXNTYPE_PREAUTHFINISHUNDO = '33', //预授权完成撤销
+		TXNTYPE_QUERYBALANCE = '71',//余额查询
+		TXNTYPE_AUTHORIZE = '72', //实名认证-建立绑定关系
+		TXNTYPE_QUERYBILL = '73', //账单查询
+		TXNTYPE_UNAUTHORIZE = '74', //解除绑定关系
+		TXNTYPE_QUERYBIND = '75', //查询绑定关系
+		TXNTYPE_FILEDOWNLOAD = '76',
+		TXNTYPE_AUTHENTICATE = '77', //发送短信验证码交易
+		TXNTYPE_DIRECTOPEN = '79',
+		TXNTYPE_QUERYOPEN = '78', //开通查询交易
+		TXNTYPE_APPLYTOKEN = '79', //开通交易
+		TXNTYPE_DELETETOKEN = '74',
+		TXNTYPE_UPDATETOKEN = '79',
+		TXNTYPE_ICCARD = '94', //IC卡脚本通知
+		TXNTYPE_UPDATEPUBLICKEY = '95'; //查询更新加密公钥证书
 	const
-		BIZTYPE_B2C = '000201', //网关
-		BIZTYPE_DIRECT = '000301', //认证支付（无跳转标准版）
-		BIZTYPE_TOKEN = '000902', //Token支付（无跳转token版）
-		BIZTYPE_B2B = '000202', //B2B
-		BIZTYPE_DIRECTDEBIT = '000501', //代收
-		BIZTYPE_CHARGE = '000601', //缴费产品
-		BIZTYPE_QRCODE = '000000'; //二维码支付
-
+		BIZTYPE_B2C     = '000201', //B2C网关支付
+		BIZTYPE_B2B     = '000202', //B2B
+		BIZTYPE_DIRECT  = '000301', //认证支付（无跳转标准版）
+		BIZTYPE_GRADE   = '000302', //评级支付
+		BIZTYPE_DIRECTDEPOSIT   = '000401', //代付
+		BIZTYPE_DIRECTDEBIT     = '000501', //代收
+		BIZTYPE_CHARGE  = '000601', //账单支付
+		BIZTYPE_AQUIRE  = '000801', //跨行收单
+		BIZTYPE_APPLEPAY  = '000802', //ApplePay
+		BIZTYPE_BIND    = '000901', //绑定支付
+		BIZTYPE_TOKEN   = '000902', //Token支付（无跳转token版）
+		BIZTYPE_ORDER   = '001001', //订购
+		BIZTYPE_DEFAULT = '000000'; //默认值
 	const
 		ACCESSTYPE_MERCHANT = '0', //商户直连接入
 		ACCESSTYPE_ACQUIRER = '1', //收单机构接入
@@ -89,7 +113,7 @@ class UnionPay {
 			self::TXNTYPE_APPLYTOKEN => ['05', '03'],
 			self::TXNTYPE_DELETETOKEN => ['01'],
 		],
-		self::BIZTYPE_QRCODE => [//extends B2C
+		self::BIZTYPE_DEFAULT => [//extends B2C
 			self::TXNTYPE_CONSUME => ['06'],
 		],
 		self::BIZTYPE_CHARGE => [
@@ -213,10 +237,7 @@ HTML;
 		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
 
 		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
-		//todo retry
 		if (!$this->response || $this->response == '') {
-//			var_dump($this->httpClient->getInfo());
-//			var_dump($this->httpClient->getResponseHeader());
 			throw new Exception("No response from remote host");
 		}
 
@@ -815,7 +836,7 @@ HTML;
 	protected function onPayNotify(array $notifyData, callable $callback, bool $validate = true) {
 		$respCode = $notifyData['respCode'];
 		if ($respCode == '00') {
-			$txnType = $notifyData['txnType'];
+			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_CONSUME) {
 				return $this->onNotify($notifyData,$callback,$validate);
 			}else{
@@ -835,7 +856,7 @@ HTML;
 	protected function onRefundNotify(array $notifyData, callable $callback, bool $validate = true) {
 		$respCode = $notifyData['respCode'];
 		if ($respCode == '00') {
-			$txnType = $notifyData['txnType'];
+			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_REFUND) {
 				return $this->onNotify($notifyData,$callback,$validate);
 			}else{
@@ -855,7 +876,7 @@ HTML;
 	protected function onPayUndoNotify(array $notifyData, callable $callback, bool $validate = true) {
 		$respCode = $notifyData['respCode'];
 		if ($respCode == '00') {
-			$txnType = $notifyData['txnType'];
+			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_CONSUMEUNDO) {
 				return $this->onNotify($notifyData,$callback,$validate);
 			}else{
@@ -875,7 +896,7 @@ HTML;
 	protected function onOpenNotify(array $notifyData, callable $callback, bool $validate = true) {
 		$respCode = $notifyData['respCode'];
 		if ($respCode == '00') {
-			$txnType = $notifyData['txnType'];
+			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_DIRECTOPEN) {
 				return $this->onNotify($notifyData,$callback,$validate);
 			}else{

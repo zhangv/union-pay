@@ -7,7 +7,7 @@ use \Exception;
  * 代收
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=68
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=68
  * @method mixed query($orderId, $txnTime, $ext = [])
  * @method mixed fileDownload($settleDate, $fileType)
  */

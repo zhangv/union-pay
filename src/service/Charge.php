@@ -5,7 +5,7 @@ use zhangv\unionpay\UnionPay;
  * 缴费产品
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=76
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=76
  * */
 class Charge extends UnionPay {
 

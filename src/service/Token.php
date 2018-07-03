@@ -5,8 +5,16 @@ use zhangv\unionpay\UnionPay;
  * 无跳转支付(Token版)
  * @license MIT
  * @author zhangv
- * @ref https://open.unionpay.com/ajweb/product/newProApiList?proId=2
- * */
+ * @link https://open.unionpay.com/ajweb/product/newProApiList?proId=2
+ * @method mixed updatePublicKey($orderId, $ext = [])
+ * @method mixed query($orderId, $txnTime, $ext = [])
+ * @method mixed fileDownload($settleDate, $fileType)
+ * @method mixed refund($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed payUndo($orderId, $origQryId, $txnAmt, $ext = [])
+ * @method mixed frontOpenPay($orderId, $txnAmt, $accNo, $customerInfo, $ext = [])
+ * @method mixed payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $installmentInfo, $ext = [])
+ * @method mixed onOpenNotify(array $notifyData, callable $callback, bool $validate = true)
+ */
 class Token extends Direct {
 
 	/**
@@ -54,18 +62,6 @@ class Token extends Direct {
 	public function frontOpen($orderId, $accNo, $customerInfo, $ext = []) {
 		$ext['bizType'] = UnionPay::BIZTYPE_TOKEN;
 		return parent::frontOpen($orderId, $accNo, $customerInfo, $ext);
-	}
-
-	/**
-	 * 开通通知处理
-	 * @param array $notifyData
-	 * @param callable $callback
-	 * @param bool $validate
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function onOpenNotify(array $notifyData, callable $callback, bool $validate = true) {
-		return parent::onOpenNotify($notifyData,$callback,$validate);
 	}
 
 	/**
@@ -163,74 +159,6 @@ class Token extends Direct {
 		],$ext);
 		$params['signature'] = $this->sign($params);
 		return $this->post($this->backTransUrl, $params);
-	}
-
-	/**
-	 * 分期付款
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $installmentInfo, $ext = []) {
-		return parent::payByInstallment($orderId, $txnAmt, $accNo, $customerInfo, $installmentInfo, $ext);
-	}
-
-	/**
-	 * 前台开通并支付
-	 * @param $orderId
-	 * @param $accNo
-	 * @param $customerInfo
-	 * @param array $ext
-	 * @return string
-	 */
-	public function frontOpenPay($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
-		return parent::frontOpenPay($orderId, $txnAmt, $accNo, $customerInfo, $ext);
-	}
-
-	/**
-	 * 支付撤销
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		return parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
-	}
-
-	/**
-	 * 退款
-	 * @param $orderId
-	 * @param $origQryId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return array
-	 */
-	public function refund($orderId, $origQryId, $txnAmt, $ext = []) {
-		return parent::refund($orderId, $origQryId, $txnAmt, $ext);
-	}
-
-	/**
-	 * 交易状态查询
-	 * @param $orderId
-	 * @param $txnTime
-	 * @param array $ext
-	 * @return mixed
-	 */
-	public function query($orderId, $txnTime, $ext = []) {
-		return parent::query($orderId, $txnTime, $ext);
-	}
-
-	/**
-	 * 文件传输
-	 * @param string $settleDate MMDD
-	 * @param string $fileType
-	 * @return mixed
-	 */
-	public function fileDownload($settleDate, $fileType = '00') {
-		parent::fileDownload($settleDate, $fileType);
 	}
 
 	/**

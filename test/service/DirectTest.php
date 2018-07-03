@@ -178,4 +178,20 @@ pp/iLT8vIl1hNgLh0Ghs7DBSx99I+S3VuUzjHNxL6fGRhlix7Rb8
 		$orderId = $this->genOutTradeNo();
 		$f = $this->unionPay->refund($orderId,1,1);
 	}
+
+	/**
+	 * @test
+	 * @expectedException Exception
+	 */
+	function onOpenNotify(){
+		$notify = ['a'=>'b','respCode'=>'00','txnType' => UnionPay::TXNTYPE_REFUND];
+		$r = $this->unionPay->onOpenNotify($notify,function($data){
+			return $data;
+		},false);
+		$this->assertEquals('b',$r['a']);
+		unset($notify['txnType']);
+		$r = $this->unionPay->onOpenNotify($notify,function($data){
+			return $data;
+		},false);
+	}
 }

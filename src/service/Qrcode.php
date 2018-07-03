@@ -24,7 +24,7 @@ class Qrcode extends B2C {
 		$params = array_merge(UnionPay::commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '07',
-			'bizType' => UnionPay::BIZTYPE_QRCODE,
+			'bizType' => UnionPay::BIZTYPE_DEFAULT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'currencyCode' => $this->config['currencyCode'],
@@ -38,23 +38,20 @@ class Qrcode extends B2C {
 
 	/**
 	 * 二维码消费（被扫）
-	 * @param $orderId
-	 * @param $txnAmt
+	 * @param string $orderId
+	 * @param string $txnAmt
 	 * @param array $ext
 	 * @return array
 	 * @throws Exception
 	 */
 	public function pay($orderId, $txnAmt, $ext = []) {
-//		if (empty($ext['termId'])) {
-//			throw new Exception("termId is required.");
-//		}
 		if (empty($ext['qrNo'])) {
 			throw new Exception("qrNo is required.");
 		}
 		$params = array_merge(UnionPay::commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '06',
-			'bizType' => UnionPay::BIZTYPE_QRCODE,
+			'bizType' => UnionPay::BIZTYPE_DEFAULT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'currencyCode' => $this->config['currencyCode'],
@@ -75,10 +72,9 @@ class Qrcode extends B2C {
 	 * @return mixed
 	 */
 	public function payUndo($orderId, $origQryId, $txnAmt, $ext = []) {
-		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
+		$ext['bizType'] = UnionPay::BIZTYPE_DEFAULT;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
-		return $result;
+		return parent::payUndo($orderId, $origQryId, $txnAmt, $ext);
 	}
 
 	/**
@@ -90,10 +86,9 @@ class Qrcode extends B2C {
 	 * @return mixed
 	 */
 	public function refund($orderId, $origQryId, $refundAmt, $ext = []) {
-		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
+		$ext['bizType'] = UnionPay::BIZTYPE_DEFAULT;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		$result = parent::refund($orderId, $origQryId, $refundAmt, $ext);
-		return $result;
+		return parent::refund($orderId, $origQryId, $refundAmt, $ext);
 	}
 
 	/**
@@ -104,10 +99,9 @@ class Qrcode extends B2C {
 	 * @return mixed
 	 */
 	public function query($orderId, $txnTime, $ext = []) {
-		$ext['bizType'] = UnionPay::BIZTYPE_QRCODE;
+		$ext['bizType'] = UnionPay::BIZTYPE_DEFAULT;
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
 		return parent::query($orderId, $txnTime, $ext);
 	}
-
 
 }

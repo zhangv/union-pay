@@ -16,6 +16,12 @@ class TokenTest extends TestCase{
 		list($mode,$this->config) = include __DIR__ .'/../../demo/config-direct.php';
 		$this->unionPay = UnionPay::Token($this->config,$mode);
 	}
+
+	private static $outTradeNoOffset = 0;
+	private function genOutTradeNo(){
+		return time().(self::$outTradeNoOffset++);
+	}
+
 	/**
 	 * 测试环境：无此交易权限
 	 * @test
@@ -84,7 +90,8 @@ class TokenTest extends TestCase{
 	}
 
 	/**
-	 * @notest todo
+	 * @test
+	 * @expectedException Exception
 	 */
 	public function updateToken(){
 		$orderId = date('YmdHis');//'20180418024955';//开通时获取
@@ -101,28 +108,19 @@ class TokenTest extends TestCase{
 
 		$tokenPayData = "{trId=62000000001&token=AAA&tokenType=01}";
 
-		try{
-			$r = $this->unionPay->updateToken($orderId, $customerInfo, $tokenPayData);
-		}catch (Exception $e){
-			var_dump($e);
-//			$this->assertEquals('34',$e->getCode());//查无此交易[2600000]
-			return;//if exception raised, then return
-		}
+		$r = $this->unionPay->updateToken($orderId, $customerInfo, $tokenPayData);
 	}
 
-	/** @notest todo */
+	/**
+	 * @test
+	 * @expectedException Exception
+	 */
 	public function deleteToken(){
 		$orderId = date('YmdHis');//'20180418024955';//开通时获取
 
 		$tokenPayData = "{trId=62000000001&token=AAA&tokenType=01}";
 
-		try{
-			$r = $this->unionPay->deleteToken($orderId, $tokenPayData);
-		}catch (Exception $e){
-			var_dump($e);
-//			$this->assertEquals('34',$e->getCode());//查无此交易[2600000]
-			return;//if exception raised, then return
-		}
+		$r = $this->unionPay->deleteToken($orderId, $tokenPayData);
 	}
 
 	/**
@@ -141,7 +139,24 @@ class TokenTest extends TestCase{
 		}catch (Exception $e){
 			$this->assertEquals('89',$this->unionPay->respCode);
 		}
-
 	}
+
+	/** @test */
+	public function frontOpen(){
+		$testAcc = $this->config['testAcc'][1];
+		$accNo = $testAcc['accNo'];
+		$customerInfo = array(
+			'phoneNo' => $testAcc['phoneNo'], //手机号
+			'cvn2' => $testAcc['cvn2'], //cvn2
+			'expired' => $testAcc['expired'], //有效期，YYMM格式，持卡人卡面印的是MMYY的，请注意代码设置倒一下
+			'smsCode' => '111111', //短信验证码
+		);
+		$orderId = $this->genOutTradeNo();
+		$f = $this->unionPay->frontOpen($orderId,$accNo,$customerInfo);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Activate.action'));
+		$this->assertNotFalse(strpos($f,$orderId));
+		$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_DIRECTOPEN));
+	}
+
 
 }
