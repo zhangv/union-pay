@@ -234,7 +234,9 @@ HTML;
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSLVERSION => 1
 		);
-		if($url !== $this->fileDownloadUrl) $url = $this->apiEndpoint . $url;
+		if($url !== $this->fileDownloadUrl) {
+			$url = $this->apiEndpoint . $url;
+		}
 
 		$this->response = $this->httpClient->post($url, $postbody, $headers, $opts);
 		if (!$this->response || $this->response == '') {
@@ -255,10 +257,10 @@ HTML;
 		if ($this->respCode == UnionPay::RESPCODE_SUCCESS) {
 			if ($validateResp === true && $this->validateSign($this->responseArray) !== true) {
 				throw new \Exception("Signature verification failed, response: {$this->response}");
-			}else {
+			} else {
 				return $this->responseArray;
 			}
-		}else {
+		} else {
 			throw new \Exception("{$this->respMsg} - request: $postbody , response: {$this->response}",$this->respCode);
 		}
 	}protected function get($url,$params = []) {
@@ -332,13 +334,13 @@ HTML;
 				return false;
 			}
 			$result [$key] = "";
-		}else {
+		} else {
 			if (strlen($key) == 0) {
 				return false;
 			}
 			if ($needUrlDecode) {
 				$result [$key] = urldecode($temp);
-			}else {
+			} else {
 				$result [$key] = $temp;
 			}
 		}
@@ -458,13 +460,13 @@ HTML;
 			} else {
 				throw new \Exception("Unsupported version - {$params['version']}");
 			}
-		}elseif($signMethod == UnionPay::SIGNMETHOD_SHA256){
+		} elseif($signMethod == UnionPay::SIGNMETHOD_SHA256){
 			$params_str = $signQueryString;
 			$params_before_sha256 = hash('sha256', $this->config['secureKey']);
 			$params_before_sha256 = $params_str.'&'.$params_before_sha256;
 			$params_after_sha256 = hash('sha256',$params_before_sha256);
 			return $params_after_sha256;
-		}else {
+		} else {
 			throw new \Exception("Unsupported Sign Method - {$signMethod}");
 		}
 	}
@@ -544,7 +546,7 @@ HTML;
 
 				if ($cert == null) {
 					return false;
-				}else {
+				} else {
 					$verifySha256 = hash('sha256', $verifyStr);
 					$signature = base64_decode($signaturebase64);
 					$result = openssl_verify($verifySha256, $signature, $cert, OPENSSL_ALGO_SHA256);
@@ -553,10 +555,10 @@ HTML;
 					}
 					return ($result === 1)?true:false;
 				}
-			}else {
+			} else {
 				throw new \Exception("Unsupported version {$params['version']}");
 			}
-		}else {
+		} else {
 			return $this->validateBySecureKey($params, $this->config['secureKey']);
 		}
 	}
@@ -799,7 +801,9 @@ HTML;
 	protected function encodeFileContent($file) {
 		if(file_exists($file)){
 			$file_content = file_get_contents($file);
-		}else $file_content = $file;
+		} else {
+			$file_content = $file;
+		}
 		//UTF8 去掉文本中的 bom头
 		$BOM = chr(239) . chr(187) . chr(191);
 		$file_content = str_replace($BOM, '', $file_content);
@@ -817,10 +821,12 @@ HTML;
 	 * @throws \Exception
 	 */
 	public function onNotify(array $notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
+		if($validate === true && $this->validateSign($notifyData) !== true) {
+			throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
+		}
 		if (is_callable($callback)) {
 			return call_user_func_array($callback, [$notifyData]);
-		}else {
+		} else {
 			throw new Exception("The callback($callback) must be callable.");
 		}
 	}
@@ -839,7 +845,7 @@ HTML;
 			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_CONSUME) {
 				return $this->onNotify($notifyData,$callback,$validate);
-			}else{
+			} else{
 				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_CONSUME);
 			}
 		}
@@ -859,7 +865,7 @@ HTML;
 			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_REFUND) {
 				return $this->onNotify($notifyData,$callback,$validate);
-			}else{
+			} else{
 				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_REFUND);
 			}
 		}
@@ -879,7 +885,7 @@ HTML;
 			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_CONSUMEUNDO) {
 				return $this->onNotify($notifyData,$callback,$validate);
-			}else{
+			} else{
 				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_CONSUMEUNDO);
 			}
 		}
@@ -899,7 +905,7 @@ HTML;
 			$txnType = isset($notifyData['txnType'])?$notifyData['txnType']:null;
 			if ($txnType == UnionPay::TXNTYPE_DIRECTOPEN) {
 				return $this->onNotify($notifyData,$callback,$validate);
-			}else{
+			} else{
 				throw new Exception("Invalid txnType({$txnType}), expecting ".UnionPay::TXNTYPE_DIRECTOPEN);
 			}
 		}
