@@ -391,7 +391,7 @@ class DirectDebit extends B2C {
 	 * @return array
 	 */
 	protected function commonParams() {
-		return  array_merge(UnionPay::commonParams(),[
+		return  array_merge(parent::commonParams(),[
 			'bizType' => UnionPay::BIZTYPE_DIRECTDEBIT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,

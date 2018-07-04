@@ -6,8 +6,6 @@
  * Time: 11:51
  */
 
-require_once __DIR__ . "/../demo/autoload.php";
-
 use zhangv\unionpay\UnionPay;
 use PHPUnit\Framework\TestCase;
 
