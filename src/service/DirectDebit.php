@@ -84,10 +84,10 @@ class DirectDebit extends B2C {
 
 	/**
 	 * 代收
-	 * @param $orderId
-	 * @param $txnAmt
+	 * @param string $orderId
+	 * @param int $txnAmt
 	 * @param array $ext
-	 * @return string
+	 * @return array
 	 */
 	public function debit($orderId, $txnAmt, $accNo, $customerInfo, $ext = []) {
 		$params = array_merge($this->commonParams(),[
@@ -112,7 +112,7 @@ class DirectDebit extends B2C {
 	 * @param string $txnAmt
 	 * @param string $bindId
 	 * @param array $ext
-	 * @return string
+	 * @return array
 	 */
 	public function debitByBindId($orderId, $txnAmt, $bindId, $ext = []) {
 		$params = array_merge($this->commonParams(),[

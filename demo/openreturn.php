@@ -9,5 +9,5 @@ $unionPay = UnionPay::Direct($config, $mode);
 $postdata = $_REQUEST;
 $unionPay->onOpenNotify($postdata, function($notifydata) {
 	echo 'SUCCESS';
-	var_dump($notifydata);
+	print_r($notifydata);
 });

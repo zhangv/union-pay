@@ -330,7 +330,7 @@ class Charge extends UnionPay {
 	 * @return array
 	 */
 	protected function commonParams() {
-		return  array_merge(UnionPay::commonParams(),[
+		return  array_merge(parent::commonParams(),[
 			'bizType' => UnionPay::BIZTYPE_CHARGE,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_MOBILE,

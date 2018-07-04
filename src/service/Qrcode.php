@@ -15,13 +15,13 @@ class Qrcode extends B2C {
 
 	/**
 	 * 二维码申请
-	 * @param $orderId
-	 * @param $txnAmt
+	 * @param string $orderId
+	 * @param string $txnAmt
 	 * @param array $ext
-	 * @return string
+	 * @return array
 	 */
 	public function apply($orderId, $txnAmt, $ext = []) {
-		$params = array_merge(UnionPay::commonParams(),[
+		$params = array_merge(parent::commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '07',
 			'bizType' => UnionPay::BIZTYPE_DEFAULT,
@@ -48,7 +48,7 @@ class Qrcode extends B2C {
 		if (empty($ext['qrNo'])) {
 			throw new Exception("qrNo is required.");
 		}
-		$params = array_merge(UnionPay::commonParams(),[
+		$params = array_merge(parent::commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '06',
 			'bizType' => UnionPay::BIZTYPE_DEFAULT,

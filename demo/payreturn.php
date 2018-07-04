@@ -9,5 +9,5 @@ $unionPay = UnionPay::B2C($config, $mode);
 $postdata = $_REQUEST;
 $unionPay->onPayNotify($postdata, function($notifydata) {
 	echo 'SUCCESS';
-	var_dump($notifydata);
+	print_r($notifydata);
 });

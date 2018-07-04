@@ -6,7 +6,7 @@ class HttpClientTest extends TestCase{
 	private $endPoint = "http://httpbin.org";
 	public function testGet(){
 		$c = new HttpClient(2);
-		$c->get("{$this->endPoint}/get");
+		$r = $c->get("{$this->endPoint}/get");
 		$info = $c->getInfo();
 		$this->assertEquals(200,$info['http_code']);
 	}

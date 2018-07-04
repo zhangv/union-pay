@@ -222,7 +222,7 @@ class B2C extends UnionPay {
 	 * @return array
 	 */
 	protected function commonParams() {
-		return  array_merge(UnionPay::commonParams(),[
+		return  array_merge(parent::commonParams(),[
 			'bizType' => UnionPay::BIZTYPE_B2C,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,

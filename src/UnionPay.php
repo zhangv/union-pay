@@ -253,7 +253,7 @@ HTML;
 		$this->respCode = $this->responseArray['respCode'];
 		$this->respMsg = (!empty($this->responseArray['respMsg']))?$this->responseArray['respMsg']:null;
 		if ($this->respCode == UnionPay::RESPCODE_SUCCESS) {
-			if ($validateResp === true && $this->validateSign($this->responseArray) !== 1) {
+			if ($validateResp === true && $this->validateSign($this->responseArray) !== true) {
 				throw new \Exception("Signature verification failed, response: {$this->response}");
 			}else {
 				return $this->responseArray;
@@ -518,7 +518,7 @@ HTML;
 	/**
 	 * 验证签名
 	 * @throws \Exception
-	 * @return int
+	 * @return bool
 	 */
 	public function validateSign($params) {
 		if ($params['signMethod'] == UnionPay::SIGNMETHOD_RSA) {
@@ -537,7 +537,7 @@ HTML;
 				if ($result === -1) {
 					throw new \Exception('Verify Error:' . openssl_error_string());
 				}
-				return $result;
+				return ($result === 1)?true:false;
 			} elseif ($params['version'] == self::VERSION_510) {
 				$signPubKeyCert = $params['signPubKeyCert'];
 				$cert = $this->verifyAndGetVerifyCert($signPubKeyCert);
@@ -551,7 +551,7 @@ HTML;
 					if ($result === -1) {
 						throw new \Exception('Verify Error:' . openssl_error_string());
 					}
-					return $result;
+					return ($result === 1)?true:false;
 				}
 			}else {
 				throw new \Exception("Unsupported version {$params['version']}");
@@ -746,7 +746,7 @@ HTML;
 			throw new Exception("file_get_contents fail。");
 		}
 
-		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) == FALSE ){
+		if(openssl_pkcs12_read ( $pkcs12certdata, $certs, $certPwd ) === false ){
 			throw new Exception($certPath . ", pwd[" . $certPwd . "] openssl_pkcs12_read fail。");
 		}
 
@@ -817,7 +817,7 @@ HTML;
 	 * @throws \Exception
 	 */
 	public function onNotify(array $notifyData, $callback, bool $validate = true) {
-		if($validate === true && $this->validateSign($notifyData) !== 1) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
+		if($validate === true && $this->validateSign($notifyData) !== true) throw new \Exception('Invalid notify data, ' . print_r($notifyData,true));
 		if (is_callable($callback)) {
 			return call_user_func_array($callback, [$notifyData]);
 		}else {

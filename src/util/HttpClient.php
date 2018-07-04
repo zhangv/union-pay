@@ -13,7 +13,6 @@ class HttpClient {
 	private $info = null;
 	private $timeout = 1;
 	private $retry = 3;
-	private $tried = 0;
 
 	public function __construct($timeout = 1) {
 		$this->initInstance($timeout);
@@ -40,9 +39,10 @@ class HttpClient {
 		curl_setopt($this->instance, CURLOPT_HTTPGET, true);
 		curl_setopt($this->instance, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt_array($this->instance, $opts);
+		$tried = 0;
 		do{
 			$result = $this->execute();
-		}while( (!$result || trim($result) == '') && ($this->tried++ < $this->retry) );
+		}while( (!$result || trim($result) == '') && ($tried++ < $this->retry) );
 
 		curl_close($this->instance);
 		$this->instance = null;
@@ -58,9 +58,10 @@ class HttpClient {
 		curl_setopt($this->instance, CURLOPT_POSTFIELDS, $params);
 		curl_setopt($this->instance, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt_array($this->instance, $opts);
+		$tried = 0;
 		do{
 			$result = $this->execute();
-		}while( (!$result || trim($result) == '') && ($this->tried++ < $this->retry) );
+		}while( (!$result || trim($result) == '') && ($tried++ < $this->retry) );
 
 		curl_close($this->instance);
 		$this->instance = null;
@@ -70,7 +71,6 @@ class HttpClient {
 		$result = curl_exec($this->instance);
 		$this->errNo = curl_errno($this->instance);
 		$this->info = curl_getinfo($this->instance);
-		$this->responseHeader = substr($result, 0, $this->info['header_size']);
 		return $result;
 	}
 

@@ -153,7 +153,7 @@ class Direct extends UnionPay {
 	 * @param string $orderId
 	 * @param string $txnAmt
 	 * @param string $accNo
-	 * @param string $customerInfo
+	 * @param array $customerInfo
 	 * @param string $installmentInfo
 	 * @param array $ext
 	 * @return array
@@ -181,9 +181,9 @@ class Direct extends UnionPay {
 
 	/**
 	 * 前台开通并支付
-	 * @param $orderId
-	 * @param $accNo
-	 * @param $customerInfo
+	 * @param string $orderId
+	 * @param string $accNo
+	 * @param array $customerInfo
 	 * @param array $ext
 	 * @return string
 	 */
@@ -205,8 +205,7 @@ class Direct extends UnionPay {
 			'payTimeout' => ''
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		$result = $this->createPostForm($params, '开通并支付',null,true);
-		return $result;
+		return $this->createPostForm($params, '开通并支付',null,true);
 	}
 
 	/**
@@ -260,7 +259,7 @@ class Direct extends UnionPay {
 	 * @return array
 	 */
 	protected function commonParams() {
-		return  array_merge(UnionPay::commonParams(),[
+		return  array_merge(parent::commonParams(),[
 			'bizType' => UnionPay::BIZTYPE_DIRECT,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,

@@ -166,7 +166,7 @@ class Token extends Direct {
 	 * @return array
 	 */
 	protected function commonParams() {
-		return  array_merge(UnionPay::commonParams(),[
+		return  array_merge(parent::commonParams(),[
 			'bizType' => UnionPay::BIZTYPE_TOKEN,
 			'accessType' => UnionPay::ACCESSTYPE_MERCHANT,
 			'channelType' => UnionPay::CHANNELTYPE_PC,
