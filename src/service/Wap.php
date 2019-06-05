@@ -17,11 +17,12 @@ class Wap extends B2C {
 	 * @param $orderId
 	 * @param $txnAmt
 	 * @param array $ext
+	 * @param bool $serverSide
 	 * @return string
 	 */
-	public function pay($orderId, $txnAmt, $ext = []) {
+	public function pay($orderId, $txnAmt, $ext = [],$serverSide = false) {
 		$ext['channelType'] = UnionPay::CHANNELTYPE_MOBILE;
-		return parent::pay($orderId, $txnAmt, $ext);
+		return parent::pay($orderId, $txnAmt, $ext,$serverSide);
 	}
 
 	/**

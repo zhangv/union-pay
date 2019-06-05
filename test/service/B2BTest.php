@@ -24,9 +24,9 @@ class B2BTest extends PHPUnit\Framework\TestCase{
 	/** @test */
 	public function pay(){
 		$orderId = $this->genOutTradeNo();
-		$r = $this->unionPay->pay($orderId,1);
-		$this->assertNotFalse(strpos($r,"https://cashier.test.95516.com/b2c/api/B2bPay.action"));
-		$this->assertNotFalse(strpos($r,$orderId));
+		$r = $this->unionPay->pay($orderId,1,[],true);
+		$this->assertNotFalse(strpos($r,"Transaction power does not exist (5131008)"));
+		//$this->assertNotFalse(strpos($r,$orderId));
 	}
 
 }

@@ -20,9 +20,9 @@ class B2B extends B2C {
 	 * @param array $ext
 	 * @return string
 	 */
-	public function pay($orderId, $txnAmt, $ext = []) {
+	public function pay($orderId, $txnAmt, $ext = [],$serverSide = false) {
 		$ext['bizType'] = UnionPay::BIZTYPE_B2B;
-		return parent::pay($orderId, $txnAmt, $ext);
+		return parent::pay($orderId, $txnAmt, $ext,$serverSide);
 	}
 
 }

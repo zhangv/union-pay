@@ -14,13 +14,14 @@ use zhangv\unionpay\UnionPay;
 class B2C extends UnionPay {
 
 	/**
-	 * 支付
+	 * 前台支付
 	 * @param $orderId
 	 * @param $txnAmt
 	 * @param array $ext
+	 * @param bool $serverSide  是否后台提交 与前台支付的差别在于直接在服务器后端完成向银联的提交，都存在超时的可能
 	 * @return string
 	 */
-	public function pay($orderId, $txnAmt, $ext = []) {
+	public function pay($orderId, $txnAmt, $ext = [], $serverSide = false) {
 		$params = array_merge($this->commonParams(),[
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
@@ -34,7 +35,31 @@ class B2C extends UnionPay {
 			'txnTime' => date('YmdHis'),
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->submitForm($this->frontTransUrl,$params);
+		return $this->createPostForm($params,'支付',$this->frontTransUrl, $serverSide);
+	}
+
+	/**
+	 *
+	 * @param $orderId
+	 * @param $txnAmt
+	 * @param array $ext
+	 * @return string
+	 */
+	public function backPay($orderId, $txnAmt, $ext = []) {
+		$params = array_merge($this->commonParams(),[
+			//基础参数
+			'txnType' => UnionPay::TXNTYPE_CONSUME,
+			'txnSubType' => '01',
+			'currencyCode' => $this->config['currencyCode'],
+			'defaultPayType' => '0001', //默认支付方式
+			//交易参数
+			'orderId' => $orderId,
+			'frontUrl' =>  $this->config['returnUrl'],
+			'txnAmt' => $txnAmt,
+			'txnTime' => date('YmdHis'),
+		],$ext);
+		$params['signature'] = $this->sign($params);
+		return $this->createPostForm($params,'支付',$this->frontTransUrl);
 	}
 
 	/**
@@ -92,7 +117,7 @@ class B2C extends UnionPay {
 	 * @param array $ext
 	 * @return mixed
 	 */
-	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
+	public function preAuth($orderId, $amt, $orderDesc, $ext = [], $serverSide = false) {
 		$params = array_merge($this->commonParams(),[
 			//基础参数
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
@@ -106,7 +131,7 @@ class B2C extends UnionPay {
 			'orderDesc' => $orderDesc,
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->submitForm($this->frontTransUrl,$params);
+		return $this->createPostForm($params,'预授权',$this->frontTransUrl, $serverSide);
 	}
 
 	/**

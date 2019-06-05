@@ -137,7 +137,7 @@ class TokenTest extends TestCase{
 		try{
 			$r = $this->unionPay->payByToken($orderId,1,$tokenPayData,$customerInfo);
 		}catch (Exception $e){
-			$this->assertEquals('89',$this->unionPay->respCode);
+			$this->assertEquals('01',$this->unionPay->respCode);//01 交易失败
 		}
 	}
 

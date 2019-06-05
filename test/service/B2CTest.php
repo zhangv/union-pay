@@ -25,19 +25,21 @@ class B2CTest extends PHPUnit\Framework\TestCase{
 	/** @test */
 	public function pay(){
 		$orderId = $this->genOutTradeNo();
-		$f = $this->unionPay->pay($orderId,1);
-		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
-		$this->assertNotFalse(strpos($f,$orderId));
+		$f = $this->unionPay->pay($orderId,1,[],true);
 
-		$f = $this->unionPay->pay($orderId,-1);
-		$this->assertNotFalse(strpos($f, "交易失败 10[9100003]Invalid field[txnAmt]"));
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/index.action?transNumber='));
+//		$this->assertNotFalse(strpos($f,$orderId));
+
+		//$f = $this->unionPay->pay($orderId,-1);
+		//银联修改了提交方式，增加了一个"跳板"页
+		//$this->assertNotFalse(strpos($f, "交易失败 10[9100003]Invalid field[txnAmt]"));
 
 		//5.0.0
 		$this->config['version'] = UnionPay::VERSION_500;
 		$this->unionPay->setConfig($this->config);
-		$f = $this->unionPay->pay($orderId,1);
-		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
-		$this->assertNotFalse(strpos($f,$orderId));
+		$f = $this->unionPay->pay($orderId,1,[],true);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/index.action?transNumber='));
+		//$this->assertNotFalse(strpos($f,$orderId));
 	}
 
 	/**
@@ -61,10 +63,10 @@ class B2CTest extends PHPUnit\Framework\TestCase{
 	/** @test */
 	public function preAuth(){
 		$orderId = $this->genOutTradeNo();
-		$f = $this->unionPay->preAuth($orderId,1,'test');
-		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/api/Pay.action'));
-		$this->assertNotFalse(strpos($f,$orderId));
-		$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_PREAUTH));
+		$f = $this->unionPay->preAuth($orderId,1,'test',[],true);
+		$this->assertNotFalse(strpos($f,'https://cashier.test.95516.com/b2c/index.action?transNumber='));
+		//$this->assertNotFalse(strpos($f,$orderId));
+		//$this->assertNotFalse(strpos($f,UnionPay::TXNTYPE_PREAUTH));
 	}
 
 	/** @test

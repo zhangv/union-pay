@@ -23,9 +23,10 @@ class App extends B2C {
 	 * @param $orderId
 	 * @param $txnAmt
 	 * @param array $ext
+	 * @param bool $serverSide
 	 * @return array
 	 */
-	public function pay($orderId, $txnAmt, $ext = []) {
+	public function pay($orderId, $txnAmt, $ext = [],$serverSide = false) {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_CONSUME,
 			'txnSubType' => '01',
@@ -47,9 +48,10 @@ class App extends B2C {
 	 * @param $amt
 	 * @param $orderDesc
 	 * @param array $ext
+	 * @param bool $serverSide
 	 * @return mixed
 	 */
-	public function preAuth($orderId, $amt, $orderDesc, $ext = []) {
+	public function preAuth($orderId, $amt, $orderDesc, $ext = [],$serverSide = false) {
 		$params = array_merge($this->commonParams(),[
 			'txnType' => UnionPay::TXNTYPE_PREAUTH,
 			'txnSubType' => '01',

@@ -54,7 +54,8 @@ class UnionPay {
 		TXNTYPE_DELETETOKEN = '74',
 		TXNTYPE_UPDATETOKEN = '79',
 		TXNTYPE_ICCARD = '94', //IC卡脚本通知
-		TXNTYPE_UPDATEPUBLICKEY = '95'; //查询更新加密公钥证书
+		TXNTYPE_UPDATEPUBLICKEY = '95', //查询更新加密公钥证书
+		TXNTYPE_REVERSE = '99';//冲正
 	const
 		BIZTYPE_B2C     = '000201', //B2C网关支付
 		BIZTYPE_B2B     = '000202', //B2B
@@ -73,8 +74,7 @@ class UnionPay {
 		ACCESSTYPE_MERCHANT = '0', //商户直连接入
 		ACCESSTYPE_ACQUIRER = '1', //收单机构接入
 		ACCESSTYPE_PLATFORM = '2'; //平台商户接入
-	const
-		RESPCODE_SUCCESS = '00', RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
+	const RESPCODE_SUCCESS = '00', RESPCODE_SIGNATURE_VERIFICATION_FAIL = '11';
 	const SMSTYPE_OPEN = '00', SMSTYPE_PAY = '02', SMSTYPE_PREAUTH = '04', SMSTYPE_OTHER = '05';
 
 	protected $txnmap = [//This fucking map is killing me.
