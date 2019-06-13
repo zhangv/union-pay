@@ -408,12 +408,13 @@ HTML;
 	 * @param array $params
 	 * @param string $title
 	 * @param string $url
-	 * @param bool $submit
+	 * @param bool $serverSide 直接服务端提交表单
 	 * @return string
 	 */
-	protected function createPostForm($params, $title = '支付', $url = null, $submit = false) {
-		if($submit === true){
-			return $this->submitForm($url?:$this->frontTransUrl,$params);
+	protected function createPostForm($params, $title = '支付', $url = null, $serverSide = false) {
+		$url = $this->apiEndpoint . $url;
+		if($serverSide === true){
+			return $this->submitForm($url);
 		}
 		$input = '';
 		foreach ($params as $key => $item) {
@@ -421,9 +422,6 @@ HTML;
 				continue;
 			}
 			$input .= "\t\t<input type=\"hidden\" name=\"{$key}\" value=\"{$item}\">\n";
-		}
-		if (!$url) {
-			$url = $this->apiEndpoint . $this->frontTransUrl;
 		}
 		return sprintf($this->formTemplate, $title, $url, $input);
 	}

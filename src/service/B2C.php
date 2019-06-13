@@ -39,30 +39,6 @@ class B2C extends UnionPay {
 	}
 
 	/**
-	 *
-	 * @param $orderId
-	 * @param $txnAmt
-	 * @param array $ext
-	 * @return string
-	 */
-	public function backPay($orderId, $txnAmt, $ext = []) {
-		$params = array_merge($this->commonParams(),[
-			//基础参数
-			'txnType' => UnionPay::TXNTYPE_CONSUME,
-			'txnSubType' => '01',
-			'currencyCode' => $this->config['currencyCode'],
-			'defaultPayType' => '0001', //默认支付方式
-			//交易参数
-			'orderId' => $orderId,
-			'frontUrl' =>  $this->config['returnUrl'],
-			'txnAmt' => $txnAmt,
-			'txnTime' => date('YmdHis'),
-		],$ext);
-		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params,'支付',$this->frontTransUrl);
-	}
-
-	/**
 	 * 消费撤销
 	 * @param string $orderId
 	 * @param string $origQryId

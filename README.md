@@ -67,7 +67,7 @@ $unionPay = UnionPay::B2C($config,$mode);
 $payOrderNo = date('YmdHis');
 $amt = 1;
 
-$html = $unionPay->pay($payOrderNo,$amt,'desc','');
+$html = $unionPay->pay($payOrderNo,$amt);
 echo $html;
 ```
 

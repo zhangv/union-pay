@@ -3,7 +3,7 @@ namespace zhangv\unionpay\service;
 use zhangv\unionpay\UnionPay;
 
 /**
- * 手机网页支付
+ * 手机网页支付 v2.2
  * @license MIT
  * @author zhangv
  * @link https://open.unionpay.com/ajweb/product/detail?id=66

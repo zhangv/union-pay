@@ -204,7 +204,7 @@ class DirectDebit extends B2C {
 			'frontUrl' => $this->config['returnUrl'],
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '绑定');
+		return $this->createPostForm($params, '绑定', $this->frontTransUrl);
 	}
 
 	/**
@@ -294,7 +294,7 @@ class DirectDebit extends B2C {
 			'reserved' =>'{checkFlag=11100}'
 		],$ext);
 		$params['signature'] = $this->sign($params);
-		return $this->createPostForm($params, '认证');
+		return $this->createPostForm($params, '认证',$this->frontTransUrl);
 	}
 
 	/**
