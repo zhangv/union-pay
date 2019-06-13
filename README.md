@@ -8,15 +8,17 @@ simplest union pay - no dependency to any library, simple enough to let you hack
 
 
 ### Feature
-* [B2C - Web网关支付](src/service/B2C.php)
-* [Wap - WAP/手机网页网关支付](src/service/Wap.php)
+* [B2C - 在线网关支付](src/service/B2C.php)
+* [Wap - 手机网页支付（WAP支付）](src/service/Wap.php)
 * [App - App/控件支付](src/service/App.php)
-* [B2B - 企业支付](src/service/B2B.php)
+* [B2B - 企业网银支付](src/service/B2B.php)
 * [Direct - 无跳转标准版](src/service/Direct.php)
 * [Token - 无跳转Token版](src/service/Token.php)
 * [Qrcode - 二维码支付](src/service/Qrcode.php)
 * [DirectDebit - 代收](src/service/DirectDebit.php)
-* [Charge - 缴费产品](src/service/Charge.php)
+* [Charge - 便民缴费产品](src/service/Charge.php)
+* 刷脸支付 （TODO）
+* 跨境电商海关申报（TODO）
 
 ### Install
 ```
