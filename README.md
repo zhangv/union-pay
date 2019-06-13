@@ -7,7 +7,7 @@
 simplest union pay - no dependency to any library, simple enough to let you hack.
 
 
-support:
+### Feature
 * [B2C - Web网关支付](src/service/B2C.php)
 * [Wap - WAP/手机网页网关支付](src/service/Wap.php)
 * [App - App/控件支付](src/service/App.php)
@@ -27,7 +27,7 @@ or
 add:
 
 ```
-"zhangv/union-pay":"0.8.11"
+"zhangv/union-pay":"0.8.12"
 ```
 in composer.json
 
@@ -109,7 +109,6 @@ function demoCallback($notifyData){//自定义回调
 }
 ```
 
-###FAQ
+### FAQ
 
-关于测试：有时候会报验签错误，一般的原因是证书错误或者参数拼接，如果确认二者没错，那么可能是因为你的商户号在银联测试环境中不生效，这种时候就需要联系银联的客服了。
-也可以直接用生产环境的证书测试交易，如果可以正常交易，那么测试交易这步也可以不做。
+* 关于测试：有时候会报验签错误，一般的原因是证书错误或者参数拼接，如果确认二者没错，那么可能是因为你的商户号在银联测试环境中不生效，这种时候需要联系银联的客服。也可以直接用生产环境的证书测试交易，如果可以正常交易，那么测试交易这步也可以不做。
